@@ -1,6 +1,6 @@
 # OpenCV for Esp32
 
-This is a fork of OpenCV modified to be cross-compiled on the ESP32. This Readme explains how to cross-compile on the ESP32 and also some details on the steps done. 
+This is a clone of OpenCV (from commit 8808aaccffaec43d5d276af493ff408d81d4593c), modified to be cross-compiled on the ESP32. This Readme explains how to cross-compile on the ESP32 and also some details on the steps done. 
 
 
 
@@ -335,7 +335,7 @@ After these fixes, the command `make` is run, with some new errors:
   * Add the following code after line 136:
 
     ```c++
-  #if defined(ESP32)
+    #if defined(ESP32)
     #include <sys/stat.h>
     const char dir_separators[] = "/";
     
@@ -433,7 +433,7 @@ When the `make` command compiles successfully, the library was tested with an ex
   * Change the line 947 in
 
     ```c++
-  #if !defined(_WIN32) && !defined(__APPLE__) && !defined(ESP32)
+    #if !defined(_WIN32) && !defined(__APPLE__) && !defined(ESP32)
     ```
   
     Which will bypass the unsupported call to `sysconf` that get the number of cpu
