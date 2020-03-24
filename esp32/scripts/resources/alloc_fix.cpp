@@ -6,6 +6,7 @@
 
 #include "ade/memory/alloc.hpp"
 
+// esp32 uses memalign from malloc.h
 #if defined(_WIN32) || defined(__ANDROID__) || defined(ANDROID) || defined(ESP32)
 #include <malloc.h>
 #else

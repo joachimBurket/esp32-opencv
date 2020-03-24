@@ -1000,6 +1000,7 @@ String tempfile( const char* suffix )
         fname = fname + "__opencv_temp.XXXXXX";
     }
 
+    // FIXME: esp32 compilation only find mktemp and not mkstemp
     //const int fd = mkstemp((char*)fname.c_str());
     //if (fd == -1) return String();
 

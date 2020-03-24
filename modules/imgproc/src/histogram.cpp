@@ -1777,6 +1777,7 @@ calcSparseBackProj_8u( std::vector<uchar*>& _ptrs, const std::vector<int>& _delt
 
 }
 
+// Optimization doesn't works with xtensa cross-compiler
 #pragma GCC push_options
 #pragma GCC optimize ("-O0")
 void cv::calcBackProject( const Mat* images, int nimages, const int* channels,

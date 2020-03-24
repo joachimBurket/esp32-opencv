@@ -21,7 +21,8 @@ class AllocatorStatistics : public AllocatorStatisticsInterface
 {
 protected:
 #ifdef CV_CXX11
-    std::atomic<long> curr, total, total_allocs, peak;      // ESP32 modification (from <long long> to <long>)
+    // std::atomic<long long> curr, total, total_allocs, peak; 
+    std::atomic<long> curr, total, total_allocs, peak;      // esp32 doesn't support hardware 64bit atomic. FIXME: add software support
 #else
     volatile long long curr, total, total_allocs, peak;  // overflow is possible, CV_XADD operates with 'int' only
 #endif

@@ -199,7 +199,7 @@ endif()
 # OpenCV cmake options
 # ----------------------------------------------------------------------------
 
-# ESP32 target option
+# ESP32 target option. Enable it with -DESP32=ON will disable/modify parts of the code for compilation to work
 OCV_OPTION(ESP32 "Compilation for esp32 target" OFF)
 
 OCV_OPTION(OPENCV_ENABLE_NONFREE "Enable non-free algorithms" OFF)
@@ -491,6 +491,7 @@ OCV_OPTION(OPENCV_ENABLE_MEMALIGN     "Enable posix_memalign or memalign usage" 
 OCV_OPTION(ENABLE_PYLINT              "Add target with Pylint checks"                            (BUILD_DOCS OR BUILD_EXAMPLES) IF (NOT CMAKE_CROSSCOMPILING AND NOT APPLE_FRAMEWORK) )
 OCV_OPTION(ENABLE_FLAKE8              "Add target with Python flake8 checker"                    (BUILD_DOCS OR BUILD_EXAMPLES) IF (NOT CMAKE_CROSSCOMPILING AND NOT APPLE_FRAMEWORK) )
 
+# Add preprocessor definition seen by the code sources
 if(ESP32)
   message(STATUS "Enabled ESP32 target specific build")
   add_definitions(-DESP32)
@@ -659,6 +660,7 @@ include(cmake/OpenCVModule.cmake)
 #  Detect endianness of build platform
 # ----------------------------------------------------------------------------
 
+# if not working while compiling for esp32, change the next line in 'if(IOS OR ESP32)'
 if(IOS)
   # test_big_endian needs try_compile, which doesn't work for iOS
   # http://public.kitware.com/Bug/view.php?id=12288

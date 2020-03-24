@@ -136,6 +136,7 @@ public:
     {
     }
 
+// Optimization doesn't works with xtensa cross-compiler
 #pragma GCC push_options
 #pragma GCC optimize ("-O0")
     virtual void operator()(const Range& range) const CV_OVERRIDE

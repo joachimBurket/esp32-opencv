@@ -942,6 +942,7 @@ int cv::getNumberOfCPUs(void)
 
 #endif
 
+// esp32 doesn't support sysconf call. FIXME: add support
 #if !defined(_WIN32) && !defined(__APPLE__) && !defined(ESP32)
 
     static unsigned cpu_count_sysconf = (unsigned)sysconf( _SC_NPROCESSORS_ONLN );
