@@ -1,5 +1,12 @@
-set(COMPONENT_SRCS "hello_opencv.cpp")
-set(COMPONENT_ADD_INCLUDEDIRS "." "./opencv/")
+set(COMPONENT_SRCS
+        main.cpp
+        system.cpp
+)
+
+set(COMPONENT_ADD_INCLUDEDIRS
+        .
+        ./opencv/
+)
 register_component()
 
 # Be aware that the order of the librairies is important
