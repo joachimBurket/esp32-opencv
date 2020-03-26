@@ -81,7 +81,7 @@ void test_spiffs()
     fgets(line, sizeof(line), f);
     fclose(f);
 
-    printf("Read from file: '%s'", line);
+    printf("Read from file: '%s'\n", line);
 
     /* Images reading/writing tests */
     Mat src;
@@ -203,7 +203,7 @@ void app_main(void)
     ESP_LOGI(TAG, "Image read of %dx%dx%d, with %d pixel depth", src.rows, src.cols, src.channels(), src.depth());
 
     /* Conversions and thresholds tests */
-    //test_thresholds(src);
+    test_thresholds(src);
     disp_mem_infos();
 
     /* Blurring tests */

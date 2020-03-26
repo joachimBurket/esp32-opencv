@@ -8,7 +8,7 @@
 /* #undef CV_ENABLE_INTRINSICS */
 
 /* OpenCV additional optimized code */
-#define CV_DISABLE_OPTIMIZATION
+/* #undef CV_DISABLE_OPTIMIZATION */
 
 /* Compile for 'real' NVIDIA GPU architectures */
 #define CUDA_ARCH_BIN ""

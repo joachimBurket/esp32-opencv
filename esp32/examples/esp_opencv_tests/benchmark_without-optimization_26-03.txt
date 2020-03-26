@@ -1,0 +1,85 @@
+I (12395) SYSTEM: task stack left: 29028 Bytes
+I (12395) SYSTEM: heap left: 4379580 Bytes
+I (12695) opencv_tests: Image read of 399x473x3, with 0 pixel depth
+I (12695) opencv_tests: ==================== Thresholding tests ====================
+Time taken by Binary threshold: 30 [ms]
+Time taken by Triangle threshold: 49 [ms]
+Time taken by OTSU threshold: 52 [ms]
+Time taken by To zero threshold: 30 [ms]
+I (13235) SYSTEM: task stack left: 29028 Bytes
+I (13235) SYSTEM: heap left: 3813264 Bytes
+I (13235) opencv_tests: ==================== Blurring tests ====================
+Time taken by GaussianBlur: 1102 [ms]
+Time taken by medianBlur: 1596 [ms]
+Time taken by bilateralFilter: 2773 [ms]
+I (29665) SYSTEM: task stack left: 27340 Bytes
+I (29665) SYSTEM: heap left: 3812992 Bytes
+I (29665) opencv_tests: =========== Morphology transformations tests ===========
+Time taken by erode: 355 [ms]
+Time taken by dilate: 355 [ms]
+Time taken by open: 686 [ms]
+I (33875) SYSTEM: task stack left: 27340 Bytes
+I (33875) SYSTEM: heap left: 3812992 Bytes
+I (33875) opencv_tests: ==================== Resizing tests ====================
+Time taken by linear resize: 109 [ms]
+Time taken by cubic resize: 337 [ms]
+Time taken by pyrUp: 499 [ms]
+Time taken by pyrDown: 77 [ms]
+I (36955) SYSTEM: task stack left: 936 Bytes
+I (36955) SYSTEM: heap left: 3812992 Bytes
+I (36955) opencv_tests: ================= Edge detection tests =================
+Time taken by Sobel: 153 [ms]
+Time taken by Canny: 324 [ms]
+I (37805) SYSTEM: task stack left: 936 Bytes
+I (37805) SYSTEM: heap left: 3812992 Bytes
+
+
+OpenCV compiled with :
+cmake 									\
+-DCMAKE_BUILD_TYPE=Release				\
+-DESP32=ON								\
+-DBUILD_SHARED_LIBS=OFF 				\
+-DCV_DISABLE_OPTIMIZATION=ON 			\
+-DWITH_IPP=OFF 							\
+-DWITH_TBB=OFF 							\
+-DWITH_OPENMP=OFF 						\
+-DWITH_PTHREADS_PF=OFF 					\
+-DWITH_QUIRC=OFF 						\
+-DWITH_1394=OFF 						\
+-DWITH_CUDA=OFF 						\
+-DWITH_OPENCL=OFF 						\
+-DWITH_OPENCLAMDFFT=OFF 				\
+-DWITH_OPENCLAMDBLAS=OFF 				\
+-DWITH_VA_INTEL=OFF 					\
+										\
+-DWITH_GSTREAMER=OFF 					\
+-DWITH_GTK=OFF 							\
+-DWITH_JASPER=OFF 						\
+-DWITH_JPEG=OFF 						\
+-DWITH_WEBP=OFF 						\
+-DBUILD_ZLIB=ON							\
+-DBUILD_PNG=ON 							\
+-DWITH_TIFF=OFF 						\
+-DWITH_V4L=OFF 							\
+-DWITH_ITT=OFF 							\
+-DWITH_PROTOBUF=OFF 					\
+-DWITH_IMGCODEC_HDR=OFF 				\
+-DWITH_IMGCODEC_SUNRASTER=OFF 			\
+-DWITH_IMGCODEC_PXM=OFF 				\
+-DWITH_IMGCODEC_PFM=OFF 				\
+										\
+-DBUILD_LIST=core,imgproc,imgcodecs		\
+-DBUILD_JAVA=OFF						\
+-DBUILD_opencv_python=OFF 				\
+-DBUILD_opencv_java=OFF 				\
+										\
+-DBUILD_opencv_apps=OFF					\
+-DBUILD_PACKAGE=OFF						\
+-DBUILD_PERF_TESTS=OFF					\
+-DBUILD_TESTS=OFF						\
+-DCV_ENABLE_INTRINSICS=OFF				\
+-DCV_TRACE=OFF							\
+-DOPENCV_ENABLE_MEMALIGN=OFF			\
+										\
+-DCMAKE_TOOLCHAIN_FILE=~/esp/esp-idf/tools/cmake/toolchain-esp32.cmake \
+..

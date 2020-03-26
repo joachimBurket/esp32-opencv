@@ -17,6 +17,12 @@ The tests were done on the ESP32D0WDQ6 (revision 1):
 
 
 
+## What works
+
+TODO: Resume what works
+
+
+
 ## Installing esp-idf toolchain
 
 First thing to do is to install the toolchain for the esp32 (see https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html)
@@ -74,7 +80,7 @@ cmake 									\
 -DCMAKE_BUILD_TYPE=Release				\
 -DESP32=ON								\
 -DBUILD_SHARED_LIBS=OFF 				\
--DCV_DISABLE_OPTIMIZATION=ON 			\
+-DCV_DISABLE_OPTIMIZATION=OFF 			\
 -DWITH_IPP=OFF 							\
 -DWITH_TBB=OFF 							\
 -DWITH_OPENMP=OFF 						\
@@ -86,6 +92,7 @@ cmake 									\
 -DWITH_OPENCLAMDFFT=OFF 				\
 -DWITH_OPENCLAMDBLAS=OFF 				\
 -DWITH_VA_INTEL=OFF 					\
+-DWITH_EIGEN=OFF						\
 										\
 -DWITH_GSTREAMER=OFF 					\
 -DWITH_GTK=OFF 							\
@@ -96,6 +103,7 @@ cmake 									\
 -DBUILD_PNG=ON 							\
 -DWITH_TIFF=OFF 						\
 -DWITH_V4L=OFF 							\
+-DWITH_LAPACK=OFF						\
 -DWITH_ITT=OFF 							\
 -DWITH_PROTOBUF=OFF 					\
 -DWITH_IMGCODEC_HDR=OFF 				\
@@ -305,7 +313,7 @@ The `cmake` command is run, leading to the following errors:
 
   **FIX:** 
 
-  * Changed the file `cmake/checks/atomic_check.cpp` in OpenCV repo. The `std::atomic<long long>` was changed in `std::atomic<long>`, and also every `std::atomic<long long>` occurrence in the OpenCV files. 
+  * Changed the file `cmake/checks/atomic_check.cpp` in OpenCV repo. The `std::atomic<long long>` was changed in `std::atomic<long>`, and also in file `modules/core/include/opencv2/core/utils/allocator_stats.impl.hpp` line 24.
 
 * CMake Error at `/usr/share/cmake-3.16/Modules/TestBigEndian.cmake:50`. The ESP32 is in little endian.
 
@@ -484,9 +492,7 @@ ESP_LOGI(TAG, "heap left: %d Bytes", esp_get_free_heap_size());
 
 ## Adding images codecs support
 
-Things tried to read/writes images in JPEG, PNG, etc..
-
-
+Things done to read/writes images in JPEG, PNG, etc..
 
 #### PNG
 
@@ -500,7 +506,7 @@ The library is compiled in the `3rdparty/` folder. Copy this folder into the esp
 #### JPEG
 
 * Remove `-DWITH_JPEG=OFF` and add `-DBUILD_JPEG=ON` of the cmake command
-  * => Problem at compilation time
+  * => Problem at compilation time. TODO
 
 
 
