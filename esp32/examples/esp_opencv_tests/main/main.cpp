@@ -147,7 +147,8 @@ void test_resize(const Mat &src)
     BENCHMARK_MS("linear resize", REPEAT, resize, src, dst, Size(), 0.75, 0.75, INTER_LINEAR);
     BENCHMARK_MS("cubic resize", REPEAT, resize, src, dst, Size(), 0.75, 0.75, INTER_CUBIC);
     BENCHMARK_MS("pyrUp", REPEAT, pyrUp, src, dst, Size(), BORDER_DEFAULT);
-    BENCHMARK_MS("pyrDown", REPEAT, pyrDown, src, dst, Size(), BORDER_DEFAULT);
+    // FIXME: pyrDown uses a lot of stack and then causes the next function to crash with a LoadProhibited
+    //BENCHMARK_MS("pyrDown", REPEAT, pyrDown, src, dst, Size(), BORDER_DEFAULT);
 }
 
 void test_edge_detect(const Mat &src)
@@ -171,12 +172,21 @@ void test_hough(const Mat &src)
 {
     ESP_LOGI(TAG, "================= Hough transform tests =================");
 
-    Mat dst, gray;
+    Mat dst, gray, edge;
 
-    // convert to grayscale
+    // Grayscale and edge detection
     cvtColor(src, gray, COLOR_BGR2GRAY);
+    Canny(gray, edge, 8, 24, 3, false);
 
+    // hough
+    vector<Vec2f> lines;
+    BENCHMARK_MS("HoughLines", REPEAT, HoughLines, edge, lines, 1, CV_PI/180, 200, 0, 0, 0, CV_PI);
+    cout << lines.size() << " lines were detected" << endl;
 
+    // probabilistic hough
+    vector<Vec4i> linesP;
+    BENCHMARK_MS("HoughLineP", REPEAT, HoughLinesP, edge, linesP, 1, CV_PI/180, 200, 30, 10);
+    cout << linesP.size() << " lines were detected" << endl;
 }
 
 void app_main(void)
@@ -214,13 +224,15 @@ void app_main(void)
     test_morphology_transform(src);
     disp_mem_infos();
 
+    /* Edge detection */
+    test_edge_detect(src);
+    disp_mem_infos();
+
     /* Image resizing */
     test_resize(src);
     disp_mem_infos();
 
-    /* Edge detection */
-    test_edge_detect(src);
-    disp_mem_infos();
+    wait_msec(500);
 
     /* Hough transform */
     test_hough(src);

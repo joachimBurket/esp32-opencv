@@ -1,13 +1,11 @@
-set(COMPONENT_SRCS
-        main.cpp
-        system.cpp
+idf_component_register(
+        SRCS
+            main.cpp
+            system.cpp
+        INCLUDE_DIRS
+            .
+            ./opencv
 )
-
-set(COMPONENT_ADD_INCLUDEDIRS
-        .
-        ./opencv/
-)
-register_component()
 
 # Be aware that the order of the librairies is important
 add_prebuilt_library(opencv_imgcodecs "opencv/libopencv_imgcodecs.a")
