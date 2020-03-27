@@ -84,7 +84,7 @@ cmake 									\
 -DWITH_IPP=OFF 							\
 -DWITH_TBB=OFF 							\
 -DWITH_OPENMP=OFF 						\
--DWITH_PTHREADS_PF=OFF 					\
+-DWITH_PTHREADS_PF=ON 					\
 -DWITH_QUIRC=OFF 						\
 -DWITH_1394=OFF 						\
 -DWITH_CUDA=OFF 						\

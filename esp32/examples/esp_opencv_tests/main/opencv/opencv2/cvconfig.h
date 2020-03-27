@@ -116,10 +116,10 @@
 #define HAVE_PNG
 
 /* Posix threads (pthreads) */
-/* #undef HAVE_PTHREAD */
+#define HAVE_PTHREAD
 
 /* parallel_for with pthreads */
-/* #undef HAVE_PTHREADS_PF */
+#define HAVE_PTHREADS_PF
 
 /* Qt support */
 /* #undef HAVE_QT */
