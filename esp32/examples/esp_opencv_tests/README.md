@@ -4,7 +4,7 @@ This example uses OpenCV library on the Esp32. Only the modules `core`, `imgproc
 
 
 
-The goal of this example is to check which OpenCV features are working.
+The goal of this example is to check which OpenCV features are working and to benchmark their computation time on the target.
 
 
 

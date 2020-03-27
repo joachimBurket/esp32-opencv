@@ -23,14 +23,15 @@
  *
  * Usage examples:
  * - without macro:
- * measure<chrono::milliseconds>::benchmark("ms", "medianBlur", repeat, medianBlur, src, dst, 9);
+ * measure<std::chrono::milliseconds>::benchmark("ms", "medianBlur", repeat, medianBlur, src, dst, 9);
  * - with macro:
  * BENCHMARK_MS("medianBlur", repeat, medianBlur, src, dst, 9);
  */
-#define BENCHMARK_NS(name, repeat, fct, ...) measure<chrono::nanoseconds>::benchmark("ns", name, repeat, fct, __VA_ARGS__)
-#define BENCHMARK_US(name, repeat, fct, ...) measure<chrono::microseconds>::benchmark("us", name, repeat, fct, __VA_ARGS__)
-#define BENCHMARK_MS(name, repeat, fct, ...) measure<chrono::milliseconds>::benchmark("ms", name, repeat, fct, __VA_ARGS__)
-#define BENCHMARK_S(name, repeat, fct, ...) measure<chrono::seconds>::benchmark("s", name, repeat, fct, __VA_ARGS__)
+#define BENCHMARK_NS(name, repeat, fct, ...) measure<std::chrono::nanoseconds>::benchmark("ns", name, repeat, fct, __VA_ARGS__)
+#define BENCHMARK_US(name, repeat, fct, ...) measure<std::chrono::microseconds>::benchmark("us", name, repeat, fct, __VA_ARGS__)
+#define BENCHMARK_MS(name, repeat, fct, ...) measure<std::chrono::milliseconds>::benchmark("ms", name, repeat, fct, __VA_ARGS__)
+#define BENCHMARK_S(name, repeat, fct, ...) measure<std::chrono::seconds>::benchmark("s", name, repeat, fct, __VA_ARGS__)
+
 
 #define fw(what) std::forward<decltype(what)>(what)
 
@@ -78,7 +79,7 @@ struct measure
             avg += duration(func, (args)...);
         }
 
-        std::cout << "Time taken by " << name << ": " << (avg / repeat).count() << " [" << unit << "]" << std::endl;
+        std::cout << name << "\t " << (avg / repeat).count() << " [" << unit << "]" << std::endl;
     }
 
     /**
