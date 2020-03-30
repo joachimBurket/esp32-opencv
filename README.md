@@ -305,6 +305,12 @@ if(ESP32)
 endif()
 ```
 
+The checks for system libraries (`libpthread`, `libdl`, `libm`, `librt`) are also activated by changing the line 607 of the `CMakeList.txt` file:
+
+```cmake
+if(UNIX OF ESP32)
+```
+
 
 
 The `cmake` command is run, leading to the following errors:
@@ -512,7 +518,17 @@ The library is compiled in the `3rdparty/` folder. Copy this folder into the esp
 
 ## Adding parallel support
 
-TODO
+To add loop parallelization on the 2 cores of the esp32, the following modifications are done:
+
+* Changed cmake command with `-DWITH_PTHREADS_PF=ON` 
+* Had to temporary add a pthread_cond usage in the main component for the link to work (otherwise had an *undefined reference to pthread_cond_* functions)
+  * The pthread_cond implementation is in the esp-idf pthread component. Haven't found yet how to link it 
+* In `parallel.cpp` function `getNumberOfCPUs`: 
+  * For now, couldn't make `sysconf` function to work (to get the number of cpus), so returns 2 if ESP32 is defined
+* In idf menuconfig: 
+  * set pthread default stack size to 8192
+
+These modifications haven't improved the performances on the benchmark for now.
 
 
 

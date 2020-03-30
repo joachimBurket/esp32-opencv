@@ -950,6 +950,10 @@ int cv::getNumberOfCPUs(void)
 
 #endif
 
+#if defined(ESP32)
+    ncpus = 2;      // TODO: Only for ESP32D0WD
+#endif
+
     return ncpus != 0 ? ncpus : 1;
 }
 

@@ -7,13 +7,7 @@
 #include "parallel_impl.hpp"
 
 #ifdef HAVE_PTHREADS_PF
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include <pthread.h>
-#ifdef __cplusplus
-}
-#endif
 
 #include <opencv2/core/utils/configuration.private.hpp>
 
