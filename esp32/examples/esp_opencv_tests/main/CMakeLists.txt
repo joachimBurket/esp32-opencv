@@ -2,6 +2,7 @@ idf_component_register(
         SRCS
             main.cpp
             system.cpp
+            report.cpp
         INCLUDE_DIRS
             .
             ./opencv
