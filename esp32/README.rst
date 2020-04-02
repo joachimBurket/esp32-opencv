@@ -28,5 +28,24 @@ Below is a summary of the OpenCV features tested on the ESP32 and the time they 
 
 
 
+Installing esp-idf toolchain
+============================
 
+First thing to do is to install the toolchain for the esp32 (see https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html)
+.. code-block:: shell
+  ### install some dependencies ###
+  sudo apt-get install -y git wget libncurses-dev flex bison gperf python python-pip python-setuptools python-serial python-click python-cryptography python-future python-pyparsing python-pyelftools ninja-build ccache libffi-dev libssl-dev
+
+  sudo apt-get install -y gawk gperf grep gettext python python-dev automake bison flex texinfo help2man libtool libtool-bin make git
+
+  mkdir -p $INSTALLDIR && cd $INSTALLDIR
+  git clone --recursive https://github.com/espressif/esp-idf.git
+
+  cd esp-idf/
+  export IDF_TOOLS_PATH=$INSTALLDIR
+  ./install.sh
+  export IDF_PATH=$INSTALLDIR/esp-idf
+  . $INSTALLDIR/esp-idf/export.sh
+
+This script can be found in esp32/scripts/install_esp32_toolchain.sh.
 
