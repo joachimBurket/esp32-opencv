@@ -90,9 +90,10 @@ All measures are in milliseconds.
 | HoughLines probabilistic                       |         699 |        1652 |         ERR |         ERR |         608 |        1358 |        3766 |         ERR |
 +------------------------------------------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+-------------+
 
-The benchmark code can be found in esp_opencv_tests_.
+The ``ERR`` fields means that the test hasn't pass (most of time due to OutOfMemory error.
 
-.. _esp_opencv_tests: esp32/examples/esp_opencv_tests/
+The benchmark code can be found in :any:`esp32/examples/esp_opencv_tests/`.
+
 
 Installing esp-idf toolchain
 ============================
@@ -145,8 +146,9 @@ The script has 2 arguments. The first is the path to the  ``toolchain-esp32.cmak
 Detailed way:
 -------------
 
-The last way explains all the commands and modifications done to be able to compile and run OpenCV on the ESP32. The detailed procedure is in esp32/doc/detailed_build_procedure.md.
+The last way explains all the commands and modifications done to be able to compile and run OpenCV on the ESP32. The detailed procedure is in detailed_build_procedure.md_.
 
+.. _detailed_build_procedure.md: esp32/doc/detailed_build_procedure.md
 
 
 Get project RAM and Flash usages
@@ -186,7 +188,7 @@ PNG
 
 - Remove ``-DWITH_PNG=OFF`` and add ``-DBUILD_PNG=ON`` and ``-DBUILD_ZLIB=ON`` of the cmake command
 
-  - => The lib ``opencv_imgcodecs.a`` build pass
+  - The lib ``opencv_imgcodecs.a`` build pass
 
 The library is compiled in the ``3rdparty/`` folder. Copy this folder into the esp32 example project folder.
 
@@ -197,7 +199,7 @@ JPEG
 
 - Remove ``-DWITH_JPEG=OFF`` and add ``-DBUILD_JPEG=ON`` of the cmake command
 
-  - => Problem at compilation time. TODO
+  - Problem at compilation time. TODO
 
 
 
