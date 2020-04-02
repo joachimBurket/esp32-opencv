@@ -92,8 +92,9 @@ All measures are in milliseconds.
 
 The ``ERR`` fields means that the test hasn't pass (most of time due to OutOfMemory error.
 
-The benchmark code can be found in :any:`esp32/examples/esp_opencv_tests/`.
+The benchmark code can be found in `esp32/examples/esp_opencv_tests/`_.
 
+.. _`esp32/examples/esp_opencv_tests/`: esp32/examples/esp_opencv_tests/
 
 Installing esp-idf toolchain
 ============================
@@ -116,9 +117,9 @@ First thing to do is to install the toolchain for the esp32 (see https://docs.es
   export IDF_PATH=$INSTALLDIR/esp-idf
   . $INSTALLDIR/esp-idf/export.sh
 
-This script can be found in install_esp_toolchain.sh_.
+This script can be found in `esp32/scripts/install_esp_toolchain.sh`_.
 
-.. _install_esp_toolchain.sh: esp32/scripts/install_esp32_toolchain.sh.
+.. _`esp32/scripts/install_esp_toolchain.sh`: esp32/scripts/install_esp32_toolchain.sh
 
 
 OpenCV cross-compilation:
@@ -129,9 +130,9 @@ This is the interesting part. OpenCV is statically cross-compiled. There are 3 w
 Faster way: 
 -----------
 
-The first way is to simply get the pre-built OpenCV library in lib_ folder, and copy it into your project (see Compiling-esp-idf-project-using-opencv)
+The first way is to simply get the pre-built OpenCV library in `esp32/lib/`_ folder, and copy it into your project (see Compiling-esp-idf-project-using-opencv)
 
-.. _lib: esp32/lib/
+.. _`esp32/lib/`: esp32/lib/
 
 
 Fast way:
