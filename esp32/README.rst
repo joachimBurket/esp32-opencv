@@ -32,7 +32,7 @@ Installing esp-idf toolchain
 ============================
 
 First thing to do is to install the toolchain for the esp32 (see https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html)
-.. code-block:: shell
+.. code:: shell
   ### install some dependencies ###
   sudo apt-get install -y git wget libncurses-dev flex bison gperf python python-pip python-setuptools python-serial python-click python-cryptography python-future python-pyparsing python-pyelftools ninja-build ccache libffi-dev libssl-dev
 
@@ -48,4 +48,22 @@ First thing to do is to install the toolchain for the esp32 (see https://docs.es
   . $INSTALLDIR/esp-idf/export.sh
 
 This script can be found in esp32/scripts/install_esp32_toolchain.sh.
+
+
+OpenCV cross-compilation:
+=========================
+
+This is the interesting part. OpenCV is statically cross-compiled. There are 3 ways to get it. 
+
+Faster way: 
+-----------
+
+The first way is to simply get the pre-built OpenCV library in esp32/lib, and copy it into your project (see Compiling-esp-idf-project-using-opencv)
+
+
+
+Fast way:
+---------
+
+The second way is by using the script in esp32/scripts/build_opencv_for_esp32.sh. This script automatically compiles OpenCV from this repository sources, and install the needed files into the desired project. It can tweaked as needed to add and remove some parts. 
 
