@@ -113,7 +113,7 @@ Adding images codecs support
 Things done to read/writes images in JPEG, PNG, etc..
 
 PNG
-~~~
+
 
 - Remove `-DWITH_PNG=OFF` and add `-DBUILD_PNG=ON` and `-DBUILD_ZLIB=ON` of the cmake command
   - => The lib `opencv_imgcodecs.a` build pass
@@ -123,7 +123,7 @@ The library is compiled in the `3rdparty/` folder. Copy this folder into the esp
 
 
 JPEG
-~~~
+
 
 - Remove `-DWITH_JPEG=OFF` and add `-DBUILD_JPEG=ON` of the cmake command
   - => Problem at compilation time. TODO
@@ -156,7 +156,7 @@ Imgproc module:
 ---------------
 
 Colorspaces
-"""""""""""
+
 
 Opencv supports multiple colorspaces (RGB, BGR, RGB565, RGBA, CIELAB, CIEXYZ, Luv, YUV, HSV, HLS, YCrCb, Bayer, Gray). All these colorspaces are not mandatory for an embedded system, so some are removed.
 
