@@ -1,12 +1,14 @@
+================
 OpenCV for Esp32
 ================
+
 
 This is a clone of OpenCV (from commit 8808aaccffaec43d5d276af493ff408d81d4593c), modified to be cross-compiled on the ESP32. This Readme explains how to cross-compile on the ESP32 and also some details on the steps done. 
 
 
 
 Hardware
-********
+========
 
 The tests were done on the ESP32D0WDQ6 (revision 1):
 
@@ -20,7 +22,7 @@ The tests were done on the ESP32D0WDQ6 (revision 1):
 
 
 Benchmark
-*********
+=========
 
 Below is a summary of the OpenCV features tested on the ESP32 and the time they took (adding the heap/stack used could also be useful).
 
@@ -29,7 +31,7 @@ Below is a summary of the OpenCV features tested on the ESP32 and the time they 
 
 
 Installing esp-idf toolchain
-****************************
+============================
 
 First thing to do is to install the toolchain for the esp32 (see https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html)
 .. code-block:: shell
@@ -52,7 +54,7 @@ This script can be found in [esp32/scripts/install_esp32_toolchain.sh](esp32/scr
 
 
 OpenCV cross-compilation:
-*************************
+=========================
 
 This is the interesting part. OpenCV is statically cross-compiled. There are 3 ways to get it. 
 
@@ -80,7 +82,7 @@ The last way explains all the commands and modifications done to be able to comp
 
 
 Get project RAM and Flash usages
-***********************************
+===================================
 
 At compilation time:
 --------------------
@@ -105,7 +107,7 @@ At run time:
 
 
 Adding images codecs support
-****************************
+============================
 
 Things done to read/writes images in JPEG, PNG, etc..
 
@@ -128,14 +130,14 @@ JPEG
 
 
 Adding parallel support
-***********************
+=======================
 
 TODO
 
 
 
 Removing OpenCV unnecessary parts 
-*********************************
+=================================
 
 Opencv is quite big, even when compiling only the core, imgproc and imgcodec modules. Because the ESP32 has limited resources, it is a good idea to remove some parts of opencv that are in most cases not used. 
 
