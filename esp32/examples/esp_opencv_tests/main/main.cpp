@@ -11,21 +11,18 @@
 #include <chrono>
 #include <iostream>
 #include <sys/unistd.h>
-
+#include <pthread.h>
+#include <thread>
+#include <tuple>
 
 
 #include "system.hpp"
-#include "measure.hpp"
+#include "report.hpp"
 
 using namespace cv;
 using namespace std;
 
-
 const char* TAG="opencv_tests";
-const int REPEAT = 3;       // number of times to repeat the function call for the average
-const int NB_IMAGES = 3;    // number of images with different resolutions for the tests
-const String images_res[] = {"160x120", "320x240", "640x480"};
-
 
 extern "C" {
 void app_main(void);
@@ -44,83 +41,104 @@ Mat read_image_specific_res(const String &fileName)
     return img;
 }
 
-void test_thresholds(const Mat &src)
-{
-    Mat dst;
 
-    // apply thresholds
-    BENCHMARK_MS("Binary threshold", REPEAT, threshold, src, dst, 128, 255, THRESH_BINARY);
-    BENCHMARK_MS("Triangle threshold", REPEAT, threshold, src, dst, 0, 255, THRESH_BINARY | THRESH_TRIANGLE);
-    BENCHMARK_MS("OTSU threshold", REPEAT, threshold, src, dst, 0, 255, THRESH_BINARY | THRESH_OTSU);
-    BENCHMARK_MS("To zero threshold", REPEAT, threshold, src, dst, 128, 255, THRESH_TOZERO);
+int64_t BM_binThresh(const Mat& src) {
+    Mat dst;
+    return BENCHMARK(threshold, src, dst, 128, 255, THRESH_BINARY);
 }
 
-void test_blurring(const Mat &src)
-{
+int64_t BM_triangleThresh(const Mat& src) {
     Mat dst;
-
-    // apply blurs
-    BENCHMARK_MS("GaussianBlur9x9", REPEAT, GaussianBlur, src, dst, Size(9, 9), 0, 0, BORDER_DEFAULT);
-    BENCHMARK_MS("medianBlur9x9", REPEAT, medianBlur, src, dst, 9);
-    BENCHMARK_MS("bilateralFilter", REPEAT, bilateralFilter, src, dst, 9, 18, 5, BORDER_DEFAULT);
+    return BENCHMARK(threshold, src, dst, 0, 255, THRESH_BINARY | THRESH_TRIANGLE);
 }
 
-void test_morphology_transform(const Mat &src)
-{
+int64_t BM_OTSUThresh(const Mat& src) {
     Mat dst;
-
-    // create a kernel for the transformation
-    Mat element = getStructuringElement(MORPH_RECT, Size(9, 9), Point(4, 4));
-
-    // apply transformations
-    BENCHMARK_MS("erode", REPEAT, erode, src, dst, element, Point(-1,-1), 1, BORDER_CONSTANT, morphologyDefaultBorderValue());
-    BENCHMARK_MS("dilate", REPEAT, dilate, src, dst, element, Point(-1,-1), 1, BORDER_CONSTANT, morphologyDefaultBorderValue());
-    BENCHMARK_MS("open", REPEAT, morphologyEx, src, dst, MORPH_OPEN, element, Point(-1,-1), 1, BORDER_CONSTANT, morphologyDefaultBorderValue());
+    return BENCHMARK(threshold, src, dst, 0, 255, THRESH_OTSU | THRESH_BINARY);
 }
 
-void test_resize(const Mat &src)
-{
+int64_t BM_toZeroThresh(const Mat& src) {
     Mat dst;
-
-    BENCHMARK_MS("linear resize", REPEAT, resize, src, dst, Size(), 0.75, 0.75, INTER_LINEAR);
-    BENCHMARK_MS("cubic resize", REPEAT, resize, src, dst, Size(), 0.75, 0.75, INTER_CUBIC);
-    BENCHMARK_MS("pyrUp", REPEAT, pyrUp, src, dst, Size(), BORDER_DEFAULT);
-    // FIXME: pyrDown uses a lot of stack and then causes the next function to crash with a LoadProhibited
-    //BENCHMARK_MS("pyrDown", REPEAT, pyrDown, src, dst, Size(), BORDER_DEFAULT);
+    return BENCHMARK(threshold, src, dst, 128, 255, THRESH_TOZERO);
 }
 
-void test_edge_detect(const Mat &src)
-{
+int64_t BM_GaussianBlur9x9(const Mat& src) {
     Mat dst;
+    return BENCHMARK(GaussianBlur, src, dst, Size(9, 9), 0, 0, BORDER_DEFAULT);
+}
 
-    BENCHMARK_MS("Sobel", REPEAT, Sobel, src, dst, 2, 2, 1, 3, 1, 0, BORDER_DEFAULT);
-    //BENCHMARK_MS("Canny", REPEAT, Canny, src, dst, 8, 24, 3, false);     // FIXME: can't deduce template parameter 'F'
-    Canny(src, dst, 8, 24, 3, false);   // cache warm up
+int64_t BM_medianBlur9x9(const Mat& src) {
+    Mat dst;
+    return BENCHMARK(medianBlur, src, dst, 9);
+}
+
+int64_t BM_bilateralFilter(const Mat& src) {
+    Mat dst;
+    return BENCHMARK(bilateralFilter, src, dst, 9, 18, 5, BORDER_DEFAULT);
+}
+
+int64_t BM_erode(const Mat& src) {
+    Mat dst;
+    Mat element = getStructuringElement(MORPH_RECT, Size(5, 5), Point(4, 4));
+    return BENCHMARK(erode, src, dst, element, Point(-1,-1), 1, BORDER_CONSTANT, morphologyDefaultBorderValue());
+}
+
+int64_t BM_dilate(const Mat& src) {
+    Mat dst;
+    Mat element = getStructuringElement(MORPH_RECT, Size(5, 5), Point(4, 4));
+    return BENCHMARK(dilate, src, dst, element, Point(-1,-1), 1, BORDER_CONSTANT, morphologyDefaultBorderValue());
+}
+
+int64_t BM_open(const Mat& src) {
+    Mat dst;
+    Mat element = getStructuringElement(MORPH_RECT, Size(5, 5), Point(4, 4));
+    return BENCHMARK(morphologyEx, src, dst, MORPH_OPEN, element, Point(-1,-1), 1, BORDER_CONSTANT, morphologyDefaultBorderValue());
+}
+
+int64_t BM_resizeLinear(const Mat& src) {
+    Mat dst;
+    return BENCHMARK(resize, src, dst, Size(), 0.75, 0.75, INTER_LINEAR);
+}
+
+int64_t BM_resizeCubic(const Mat& src) {
+    Mat dst;
+    return BENCHMARK(resize, src, dst, Size(), 0.75, 0.75, INTER_CUBIC);
+}
+int64_t BM_Sobel(const Mat& src) {
+    Mat dst;
+    return BENCHMARK(Sobel, src, dst, 2, 2, 1, 3, 1, 0, BORDER_DEFAULT);
+}
+int64_t BM_Canny(const Mat& src) {
+    Mat dst;
+    Canny(src, dst, 50, 200, 3, false);   // cache warm up
     auto start = chrono::system_clock::now();
-    Canny(src, dst, 8, 24, 3, false);
-    auto duration = chrono::duration_cast<chrono::milliseconds >(chrono::system_clock::now() - start);
-    std::cout << "Canny" << ": " << duration.count() << " [" << "ms" << "]" << std::endl;
+    Canny(src, dst, 50, 200, 3, false);
+    auto duration = chrono::duration_cast<chrono::microseconds >(chrono::system_clock::now() - start);
+    return duration.count();
 }
-
-void test_hough(const Mat &src)
-{
+int64_t BM_HoughLines(const Mat& src) {
     Mat dst, blurred, edge;
-
     blur(src, blurred, Size(3,3));
-    Canny(blurred, edge, 10, 30, 3, false);
-
-    // hough
+    Canny(blurred, edge, 50, 200, 3, false);
     vector<Vec2f> lines;
-    BENCHMARK_MS("HoughLines", REPEAT, HoughLines, edge, lines, 1, CV_PI/180, 100, 0, 0, 0, CV_PI);
-
-    // probabilistic hough
-    vector<Vec4i> linesP;
-    BENCHMARK_MS("HoughLineP", REPEAT, HoughLinesP, edge, linesP, 1, CV_PI/180, 100, 80, 0);
+    return BENCHMARK(HoughLines, edge, lines, 1, CV_PI/180, 100, 0, 0, 0, CV_PI);
 }
 
+int64_t BM_HoughLinesP(const Mat& src) {
+    Mat dst, blurred, edge;
+    blur(src, blurred, Size(3,3));
+    Canny(blurred, edge, 50, 200, 3, false);
+    vector<Vec4i> linesP;
+    return BENCHMARK(HoughLinesP, edge, linesP, 1, CV_PI/180, 100, 80, 0);
+}
 
 void app_main(void)
 {
+    pthread_cond_t cond_test = PTHREAD_COND_INITIALIZER;
+    pthread_cond_init(&cond_test, nullptr);
+    unsigned ncpus = std::thread::hardware_concurrency();
+    ESP_LOGI(TAG, "Number of CPU with std::thread::hardware_concurrency() = %d", ncpus);
+
     ESP_LOGI(TAG, "Starting main");
     disp_mem_infos();
 
@@ -128,58 +146,46 @@ void app_main(void)
     init_spiffs();
 
     /* Read the images for the tests */
-    Mat src = read_image_specific_res("/spiffs/"+images_res[0]+".png");
-    Mat src2 = read_image_specific_res("/spiffs/"+images_res[1]+".png");
-    Mat src3 = read_image_specific_res("/spiffs/"+images_res[2]+".png");
-    vector<Mat> matrices;
-    matrices.push_back(src);
-    matrices.push_back(src2);
-    matrices.push_back(src3);
-
-    // TODO: rename measure.hpp in benchmark.hpp and add printHeader method
-    // TODO: make an array of function and call them from a single loop
-
-    /* Conversions and thresholds tests */
-    printf("============================== Thresholding tests ==============================\n");
-    for(int i = 0; i < NB_IMAGES; i++) {
-        printf("Image %s -------------------------\n", images_res[i].c_str());
-        test_thresholds(matrices[i]);
+    const vector<string> images_res = {"160x120", "320x240", "640x480", "1024x768"};
+    imagesList testImages;
+    for(const String &res : images_res) {
+        testImages.push_back(tuple<string, const Mat&>(res, read_image_specific_res("/spiffs/"+res+".png")));
     }
 
-    /* Blurring tests */
-    printf("================================ Blurring tests ================================\n");
-    for(int i = 0; i < NB_IMAGES; i++) {
-        printf("Image %s -------------------------\n", images_res[i].c_str());
-        test_blurring(matrices[i]);
-    }
+    Report report("BUILD_TYPE=Release", testImages);
 
-    /* Morphology transformations */
-    printf("======================= Morphology transformations tests =======================\n");
-    for(int i = 0; i < NB_IMAGES; i++) {
-        printf("Image %s -------------------------\n", images_res[i].c_str());
-        test_morphology_transform(matrices[i]);
-    }
+    TestGroup &thresholds = report.addGroup("Threshold");
+    thresholds.addTestCase(TestCase("binaryThreshold",  BM_binThresh));
+    thresholds.addTestCase(TestCase("triangleThreshold",  BM_triangleThresh));
+    thresholds.addTestCase(TestCase("OTSUThreshold", BM_OTSUThresh));
+    thresholds.addTestCase(TestCase("toZeroThreshold", BM_toZeroThresh));
 
-    /* Edge detection */
-    printf("================================ Resizing tests ================================\n");
-    for(int i = 0; i < NB_IMAGES; i++) {
-        printf("Image %s -------------------------\n", images_res[i].c_str());
-        test_resize(matrices[i]);
-    }
+    TestGroup &blurrings = report.addGroup("Blurring");
+    blurrings.addTestCase(TestCase("GaussianBlur 9x9 kernel", BM_GaussianBlur9x9));
+    blurrings.addTestCase(TestCase("medianBlur 9x9 kernel", BM_medianBlur9x9));
+    blurrings.addTestCase(TestCase("bilateralFilter diameter=9", BM_bilateralFilter));
 
-    /* Image resizing */
-    printf("============================= Edge detection tests =============================\n");
-    for(int i = 0; i < NB_IMAGES; i++) {
-        printf("Image %s -------------------------\n", images_res[i].c_str());
-        test_edge_detect(matrices[i]);
-    }
+    TestGroup &morph = report.addGroup("Morphological tranforms");
+    morph.addTestCase(TestCase("erode 5x5 kernel", BM_erode));
+    morph.addTestCase(TestCase("dilate 5x5 kernel", BM_dilate));
+    morph.addTestCase(TestCase("open 5x5 kernel", BM_open));
 
-    /* Hough transform */
-    printf("============================= Hough transform tests ============================\n");
-    for(int i = 0; i < NB_IMAGES; i++) {
-        printf("Image %s -------------------------\n", images_res[i].c_str());
-        test_hough(matrices[i]);
-    }
+    TestGroup &resize = report.addGroup("Resize image");
+    resize.addTestCase(TestCase("resize linear interpolation", BM_resizeLinear));
+    resize.addTestCase(TestCase("resize cubic interpolation", BM_resizeCubic));
+
+    TestGroup &edgeDetect = report.addGroup("Edge detection");
+    edgeDetect.addTestCase(TestCase("Sobel", BM_Sobel));
+    edgeDetect.addTestCase(TestCase("Canny", BM_Canny));
+
+    TestGroup &houghTransform = report.addGroup("Hough tranformations");
+    houghTransform.addTestCase(TestCase("HoughLines", BM_HoughLines));
+    houghTransform.addTestCase(TestCase("HoughLines probabilistic", BM_HoughLinesP));
+
+    report.startBenchmark();
+
+    string summary = report.getSummary();
+    cout << summary << endl;
 
     ESP_LOGI(TAG, "End of main");
 }

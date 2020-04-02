@@ -1,77 +1,10 @@
-# OpenCV for Esp32
-
-This is a clone of OpenCV (from commit 8808aaccffaec43d5d276af493ff408d81d4593c), modified to be cross-compiled on the ESP32. This Readme explains how to cross-compile on the ESP32 and also some details on the steps done. 
-
-
-
-## Hardware
-
-The tests were done on the ESP32D0WDQ6 (revision 1):
-
-* Xtensa dual core 32-bit LX6 uP, up to 600 MIPS
-* 448 KB of ROM for booting and core functions
-* 520 KB of SRAM for data and instructions cache
-* 16 KB SRAM in RTC
-* 8 MB of external SPI RAM
-* 16 MB of external SPI Flash
-
-
-
-## What works
-
-TODO: Resume what works
-
-
-
-## Installing esp-idf toolchain
-
-First thing to do is to install the toolchain for the esp32 (see https://docs.espressif.com/projects/esp-idf/en/latest/get-started/index.html)
-
-```bash
-### install some dependencies ###
-sudo apt-get install -y git wget libncurses-dev flex bison gperf python python-pip python-setuptools python-serial python-click python-cryptography python-future python-pyparsing python-pyelftools ninja-build ccache libffi-dev libssl-dev
-
-sudo apt-get install -y gawk gperf grep gettext python python-dev automake bison flex texinfo help2man libtool libtool-bin make git
-
-mkdir -p $INSTALLDIR && cd $INSTALLDIR
-git clone --recursive https://github.com/espressif/esp-idf.git
-
-cd esp-idf/
-export IDF_TOOLS_PATH=$INSTALLDIR
-./install.sh
-export IDF_PATH=$INSTALLDIR/esp-idf
-. $INSTALLDIR/esp-idf/export.sh
-```
-
-This script can be found in [esp32/scripts/install_esp32_toolchain.sh](esp32/scripts/install_esp32_toolchain.sh).
-
-
-
-## OpenCV cross-compilation:
-
-This is the interesting part. OpenCV is statically cross-compiled. There are 3 ways to get it. 
-
-### Faster way: 
-
-The first way is to simply get the already compiled library in [esp32/lib](esp32/lib), and copy it into your project (see [this section](#Compiling-esp-idf-project-using-opencv))
-
-
-
-### Fast way:
-
-The second way is by using the script in [esp32/scripts/build_opencv_for_esp32.sh](esp32/scripts/build_opencv_for_esp32.sh). This script automatically compiles OpenCV from this repository sources, and install the needed files into the desired project. It can tweaked as needed to add and remove some parts. 
-
-The script has 2 arguments. The first is the path to the  `toolchain-esp32.cmake` (default is `$HOME/esp/esp-idf/tools/cmake/toolchain-esp32.cmake`), and the second is the path where the OpenCV library is installed (default is in [esp32/lib](esp32/lib)).
-
-
-
-### Detailed way:
+# Detailed build procedure
 
 The last way explains all the commands and modifications done to be able to compile and run OpenCV on the ESP32.
 
 
 
-#### CMake command:
+## CMake command:
 
 The following cmake command is launched in the `build/` directory.
 
@@ -128,23 +61,27 @@ cmake 									\
 ..
 ```
 
+* `-DCMAKE_BUILD_TYPE` can be set to `Debug` to simplify debugging, but uses more RAM 
 
+* `-DBUILD_ZLIB` and `-DBUILD_PNG` are enabled to statically compile the libs instead of using dynamic libs of the system.
 
-The toolchain file `toolchain-esp32.cmake` is taken from esp-idf github:
+* `-DOPENCV_ENABLE_MEMALIGN` is disabled because the ESP32 doesn't support memory alignment for now (https://github.com/espressif/esp-idf/issues/4218)
 
-```cmake
-set(CMAKE_SYSTEM_NAME Generic)
+* The toolchain file `toolchain-esp32.cmake` is taken from esp-idf github:
 
-set(CMAKE_C_COMPILER xtensa-esp32-elf-gcc)
-set(CMAKE_CXX_COMPILER xtensa-esp32-elf-g++)
-set(CMAKE_ASM_COMPILER xtensa-esp32-elf-gcc)
-
-set(CMAKE_C_FLAGS "-mlongcalls -Wno-frame-address" CACHE STRING "C Compiler Base Flags")
-set(CMAKE_CXX_FLAGS "-mlongcalls -Wno-frame-address" CACHE STRING "C++ Compiler Base Flags")
-
-# Can be removed after gcc 5.2.0 support is removed (ref GCC_NOT_5_2_0)
-set(CMAKE_EXE_LINKER_FLAGS "-nostdlib" CACHE STRING "Linker Base Flags")
-```
+  ```cmake
+  set(CMAKE_SYSTEM_NAME Generic)
+  
+  set(CMAKE_C_COMPILER xtensa-esp32-elf-gcc)
+  set(CMAKE_CXX_COMPILER xtensa-esp32-elf-g++)
+  set(CMAKE_ASM_COMPILER xtensa-esp32-elf-gcc)
+  
+  set(CMAKE_C_FLAGS "-mlongcalls -Wno-frame-address" CACHE STRING "C Compiler Base Flags")
+  set(CMAKE_CXX_FLAGS "-mlongcalls -Wno-frame-address" CACHE STRING "C++ Compiler Base Flags")
+  
+  # Can be removed after gcc 5.2.0 support is removed (ref GCC_NOT_5_2_0)
+  set(CMAKE_EXE_LINKER_FLAGS "-nostdlib" CACHE STRING "Linker Base Flags")
+  ```
 
 
 
@@ -227,7 +164,7 @@ When the `cmake` command works, the following summary is given:
 
 
 
-#### Make command:
+## Make command:
 
 When the cmake is done, the compilation is started with:
 
@@ -239,50 +176,62 @@ When the compilation has ended, the libs are in the `build/lib` folder.
 
 
 
-#### Compiling esp-idf project using OpenCV:
+## Compiling esp-idf project using OpenCV:
 
 When the OpenCV library is cross-compiled, we have in result `*.a` files located in `build/lib` folder. We now want to try to compile an example project using OpenCV on the esp32. A basic example of esp-idf project can be found in [esp32/examples/esp_opencv_basic](esp32/examples/esp_opencv_basic). This project simply creates an OpenCV matrix, fill it with values and prints it on the console.
 
-Esp-idf environment uses cmake and is separated in components. Because OpenCV lib were compiled outside this example project, we use the pre-built library functionality of esp-idf (https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#using-prebuilt-libraries-with-components).
+Esp-idf environment uses cmake and is separated in components. Because OpenCV libs were compiled outside this example project, we use the pre-built library functionality of esp-idf (https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#using-prebuilt-libraries-with-components).
 
 Here are the things done to add the OpenCV library to the project:
 
 * Create a folder named `opencv/` into the `main/` component's folder
 * Copy the generated libraries (`libade.a`, `libopencv_core.a`, `libopencv_imgproc.a` and `libopencv_imgcodecs.a`) into this directory
-* Create the folder `opencv2/` into this directory, and copy into it the needed headers :
+* Create the folder `opencv2/` into this directory, and copy into it the needed headers files :
   * `cvconfig.h`
+  * `opencv_modules.hpp`
+  * `opencv.hpp`
   * `core.hpp`
   * `imgproc.hpp`
-  * `opencv.hpp`
-  * `opencv_modules.hpp`
+  * `imgcodecs.hpp`
   * `core/` folder
   * `imgproc/` folder
+  * `imgcodecs/` folder
+
+* Link the libraries to the project by modifying the `CMakeList.txt` of the `main` project's component is as below :
+
+  ```cmake
+  idf_component_register(
+  	SRC main.cpp
+  	INCLUDE_DIRS ./opencv
+  )
+  
+  # Be aware that the order of the librairies is important
+  add_prebuilt_library(opencv_imgcodecs "opencv/libopencv_imgcodecs.a")
+  add_prebuilt_library(libpng "opencv/3rdparty/liblibpng.a")
+  add_prebuilt_library(libzlib "opencv/3rdparty/libzlib.a")
+  add_prebuilt_library(opencv_imgproc "opencv/libopencv_imgproc.a")
+  add_prebuilt_library(opencv_core "opencv/libopencv_core.a")
+  add_prebuilt_library(ade "opencv/libade.a")
+  
+  target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgcodecs)
+  target_link_libraries(${COMPONENT_LIB} PRIVATE libpng)
+  target_link_libraries(${COMPONENT_LIB} PRIVATE libzlib)
+  target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgproc)
+  target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_core)
+  target_link_libraries(${COMPONENT_LIB} PRIVATE ade)
+  ```
+
+* Finally, include the OpenCV headers needed into your source files: 
+
+  ```c++
+  #include "opencv2/core.hpp"
+  #include "opencv2/imgproc.hpp"
+  #include "opencv2/imgcodecs.hpp"
+  ```
 
 
 
-So the `CMakeList.txt` of the `main` project's component is as below :
-
-```cmake
-set(COMPONENT_SRCS "hello_opencv.cpp")
-set(COMPONENT_ADD_INCLUDEDIRS "." "./opencv/")
-set(COMPONENT_NAME "main")
-register_component()
-
-# Be aware that the order of the librairies is important
-add_prebuilt_library(opencv_imgcodecs "opencv/libopencv_imgcodecs.a")
-add_prebuilt_library(opencv_imgproc "opencv/libopencv_imgproc.a")
-add_prebuilt_library(opencv_core "opencv/libopencv_core.a")
-add_prebuilt_library(ade "opencv/libade.a")
-
-target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgcodecs)
-target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgproc)
-target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_core)
-target_link_libraries(${COMPONENT_LIB} PRIVATE ade)
-```
-
-
-
-#### Modified files for OpenCV to compile and run:
+## Modified files for OpenCV to compile and run:
 
 To get the cmake configuration and make compilation to work, some modifications on OpenCV files had to be done. They are listed below.
 
@@ -315,13 +264,15 @@ if(UNIX OF ESP32)
 
 The `cmake` command is run, leading to the following errors:
 
-* Having error `C++11 compiler must support std::atomic`. The esp32 only has hardware support for 32-bit atomic operations but not wider (https://github.com/espressif/esp-idf/issues/3163)
+* *Having error `C++11 compiler must support std::atomic`*
+
+  The esp32 only has hardware support for 32-bit atomic operations but not wider (https://github.com/espressif/esp-idf/issues/3163)
 
   **FIX:** 
 
   * Changed the file `cmake/checks/atomic_check.cpp` in OpenCV repo. The `std::atomic<long long>` was changed in `std::atomic<long>`, and also in file `modules/core/include/opencv2/core/utils/allocator_stats.impl.hpp` line 24.
 
-* CMake Error at `/usr/share/cmake-3.16/Modules/TestBigEndian.cmake:50`. The ESP32 is in little endian.
+* *CMake Error at `/usr/share/cmake-3.16/Modules/TestBigEndian.cmake:50`. The ESP32 is in little endian.*
 
   **FIX:** 
 
@@ -336,13 +287,15 @@ The `cmake` command is run, leading to the following errors:
 
 After these fixes, the command `make` is run, with some new errors:
 
-* alloc.cpp:31:16: error: 'posix_memalign' was not declared in this scope
+* *alloc.cpp:31:16: error: 'posix_memalign' was not declared in this scope*
 
   **FIX:** Modify `alloc.cpp` 
 
   * When there is an `#if defined(ANDROID)`, add ` || defined(ESP32)` after, so that `malloc.h` is included and `memalign` is used
   
-* #error "<dirent.h> not supported". The ESP32 doesn't support directories (which are emulated with the filenames, like `mydir/mysubdir/myfile.c`).
+* *#error "<dirent.h> not supported"*
+
+  The ESP32 doesn't support directories (which are emulated with the filenames, like `mydir/mysubdir/myfile.c`).
 
   **FIX:** Modify `modules/core/src/glob.cpp`
 
@@ -389,16 +342,16 @@ After these fixes, the command `make` is run, with some new errors:
         }
     }
     ```
-  
+
     The function are not implemented yet. Must be implemented if files reading/writing in SPIFFS needed.
 
-* system.cpp:1002:20: error: 'mkstemp' was not declared in this scope
+* *system.cpp:1002:20: error: 'mkstemp' was not declared in this scope*
 
   **FIX:**
 
   * Tried to include `<stdlib.h>` where `mkstemp` is, but didn't worked, so just commented lines 1003 to 1007 for now
 
-* color.simd_helpers.hpp:148:5: error: insn does not satisfy its constraints
+* *color.simd_helpers.hpp:148:5: error: insn does not satisfy its constraints*
 
   **FIX:**
 
@@ -416,7 +369,7 @@ After these fixes, the command `make` is run, with some new errors:
 
     
 
-* histogram.cpp:1813:1: error: insn does not satisfy its constraints
+* *histogram.cpp:1813:1: error: insn does not satisfy its constraints*
 
   **FIX:** 
 
@@ -438,7 +391,7 @@ After these fixes, the command `make` is run, with some new errors:
 
 When the `make` command compiles successfully, the library was tested with an example. This led to some new errors:
 
-* parallel.cpp:949:58: undefined reference to sysconf
+* *parallel.cpp:949:58: undefined reference to sysconf*
 
   This error appeared while trying to use the `canny()` method of the imgproc module
 
@@ -452,18 +405,15 @@ When the `make` command compiles successfully, the library was tested with an ex
   
     Which will bypass the unsupported call to `sysconf` that get the number of cpu
 
-* .dram0.bss will not fit in region dram0_0_seg ;  region `dram0_0_seg' overflowed by 13496 bytes
+* *.dram0.bss will not fit in region dram0_0_seg ;  region `dram0_0_seg' overflowed by 13496 bytes*
 
   This error appeared while trying to add `cvtColor()` function
 
   **Fix:** 
 
-  * The error says that BSS section (uninitialized variables) is too big. 
+  * The error says that `dram_0_0_seg` region (containing memory allocated statically at compile time) is overflowed. 
 
-  * There are Linker Script that can be used to define the placements of the code into the memory but couldn't find how to increase dram_0_0_seg size. Some say that it's not possible for now because section after dram0_0_seg is static. If not, will need to find too big variables and put them on the heap..
-
-    See `esp-idf/components/esp32/ld/esp32.ld` file
-
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< HEAD:README.md
   * Disabling the bluetooth in the `menuconfig` saves 56'156 Bytes, but doesn't work though
 
   * Searching in `build/<project-name>.map` for the `.dram0.bss` section, and looking at the opencv bss variables that are big
@@ -569,6 +519,16 @@ Opencv supports multiple colorspaces (RGB, BGR, RGB565, RGBA, CIELAB, CIEXYZ, Lu
     ```
   
 * todo
+========================================================================================================================================================================================================
+    The Linker Script `esp-idf/components/esp32/ld/esp32.ld` defines the memory layout. It tells the linker where to put the compiler outputs.
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>> master:esp32/doc/detailed_build_procedure.md
 
+    * The region `dram_0_0_seg` has a size of `0x2c200` which corresponds to `~180kB`
+    * It is said in this file that this dram segment *should* be `0x50000` (`~330kB`) and that extra DRAM is available in heap at runtime, but that due to static ROM memory usage at 176kB mark, the additional static memory cannot be used. (see also https://esp32.com/viewtopic.php?t=6699).
+    * Also enabling `Bluetooth` and `Trace Memory` features in menuconfig will decrease the amount of RAM available
 
+  * Because we can't have more static memory, some features had to be disabled:
 
+    * Disabling the Bluetooth (~56kB) and Trace Memory in the menuconfig
+    * Disabling some OpenCV features not mandatory and taking lot of memory. To find variables taking too much space, the `build/<project-name>.map`  file is useful (looking for big variables under the `.dram0.bss` section).
+    * `imgproc/color_lab.cpp` has variables (trilinearLUTE, InvGammaTab and LabCbrtTab) taking ~88 kB. They are used for colorspace conversions in and from CIE LAB and XYZ images. These functions were removed. 
