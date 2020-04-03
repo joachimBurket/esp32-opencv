@@ -165,8 +165,6 @@ string Summary::summaryHeader(const string &reportName) {
     summaryHeaderLines += lineText({"Function name and arguments", reportName});
     summaryHeaderLines += lineSeparator('-');
     summaryHeaderLines += lineText(imagesNames);
-    summaryHeaderLines += lineSeparator('-');
-    summaryHeaderLines += lineText({"Measures are in [ms]"});
     summaryHeaderLines += lineSeparator('=');
     return summaryHeaderLines;
 }
@@ -191,7 +189,7 @@ string Summary::summaryTest(const TestCase &test) {
     for(auto res : test.resultTime) {
         string value;
         if(res == -1) {
-            value = " - ";
+            value = "ERR";
         }
         else {
             stringstream ss;

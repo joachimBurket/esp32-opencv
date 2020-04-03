@@ -62,19 +62,19 @@ int64_t BM_toZeroThresh(const Mat& src) {
     return BENCHMARK(threshold, src, dst, 128, 255, THRESH_TOZERO);
 }
 
-int64_t BM_GaussianBlur9x9(const Mat& src) {
+int64_t BM_GaussianBlur3x3(const Mat& src) {
     Mat dst;
-    return BENCHMARK(GaussianBlur, src, dst, Size(9, 9), 0, 0, BORDER_DEFAULT);
+    return BENCHMARK(GaussianBlur, src, dst, Size(3, 3), 0, 0, BORDER_DEFAULT);
 }
 
-int64_t BM_medianBlur9x9(const Mat& src) {
+int64_t BM_medianBlur3x3(const Mat& src) {
     Mat dst;
-    return BENCHMARK(medianBlur, src, dst, 9);
+    return BENCHMARK(medianBlur, src, dst, 3);
 }
 
 int64_t BM_bilateralFilter(const Mat& src) {
     Mat dst;
-    return BENCHMARK(bilateralFilter, src, dst, 9, 18, 5, BORDER_DEFAULT);
+    return BENCHMARK(bilateralFilter, src, dst, 5, 18, 5, BORDER_DEFAULT);
 }
 
 int64_t BM_erode(const Mat& src) {
@@ -134,10 +134,9 @@ int64_t BM_HoughLinesP(const Mat& src) {
 
 void app_main(void)
 {
+    // Needed for opencv linkage with pthread to work
     pthread_cond_t cond_test = PTHREAD_COND_INITIALIZER;
     pthread_cond_init(&cond_test, nullptr);
-    unsigned ncpus = std::thread::hardware_concurrency();
-    ESP_LOGI(TAG, "Number of CPU with std::thread::hardware_concurrency() = %d", ncpus);
 
     ESP_LOGI(TAG, "Starting main");
     disp_mem_infos();
@@ -161,9 +160,9 @@ void app_main(void)
     thresholds.addTestCase(TestCase("toZeroThreshold", BM_toZeroThresh));
 
     TestGroup &blurrings = report.addGroup("Blurring");
-    blurrings.addTestCase(TestCase("GaussianBlur 9x9 kernel", BM_GaussianBlur9x9));
-    blurrings.addTestCase(TestCase("medianBlur 9x9 kernel", BM_medianBlur9x9));
-    blurrings.addTestCase(TestCase("bilateralFilter diameter=9", BM_bilateralFilter));
+    blurrings.addTestCase(TestCase("GaussianBlur 3x3 kernel", BM_GaussianBlur3x3));
+    blurrings.addTestCase(TestCase("medianBlur 3x3 kernel", BM_medianBlur3x3));
+    blurrings.addTestCase(TestCase("bilateralFilter diameter=5", BM_bilateralFilter));
 
     TestGroup &morph = report.addGroup("Morphological tranforms");
     morph.addTestCase(TestCase("erode 5x5 kernel", BM_erode));
