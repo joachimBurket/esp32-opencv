@@ -124,9 +124,48 @@ static bool IPPSet(const cv::Scalar &value, void *dataPointer, int step, IppiSiz
 
 /************** interpolation formulas and tables ***************/
 
+
 const int INTER_REMAP_COEF_BITS=15;
 const int INTER_REMAP_COEF_SCALE=1 << INTER_REMAP_COEF_BITS;
 
+
+
+#ifdef ESP32
+/**
+ * Modifications for ESP32: These tables are taking too much space in dram0 segment which is limited
+ * in size. They are therefore initialized in heap at runtime
+ */
+
+static uchar *NNDeltaTab_i;
+
+static float *BilinearTab_f;
+static short *BilinearTab_i;
+
+static float *BicubicTab_f;
+static short *BicubicTab_i;
+
+static float *Lanczos4Tab_f;
+static short *Lanczos4Tab_i;
+
+// Modif ESP32: allocate buffers on heap. FIXME: changed access from 2 or 3 dimensions to 1 dimension. Need to find usages of these tables to modify access
+static bool tablesAllocated = false;
+static void allocateTables()
+{
+    NNDeltaTab_i = new uchar[INTER_TAB_SIZE2*2];
+
+    BilinearTab_f = new float[INTER_TAB_SIZE2*2*2];
+    BilinearTab_i = new short[INTER_TAB_SIZE2*2*2];
+
+    BicubicTab_f = new float[INTER_TAB_SIZE2*4*4];
+    BicubicTab_i = new short[INTER_TAB_SIZE2*4*4];
+
+    Lanczos4Tab_f = new float[INTER_TAB_SIZE2*8*8];
+    Lanczos4Tab_i = new short[INTER_TAB_SIZE2*8*8];
+
+    tablesAllocated = true;
+}
+
+#else
 static uchar NNDeltaTab_i[INTER_TAB_SIZE2][2];
 
 static float BilinearTab_f[INTER_TAB_SIZE2][2][2];
@@ -142,6 +181,7 @@ static short BicubicTab_i[INTER_TAB_SIZE2][4][4];
 
 static float Lanczos4Tab_f[INTER_TAB_SIZE2][8][8];
 static short Lanczos4Tab_i[INTER_TAB_SIZE2][8][8];
+#endif
 
 static inline void interpolateLinear( float x, float* coeffs )
 {
@@ -209,19 +249,22 @@ static void initInterTab1D(int method, float* tab, int tabsz)
         CV_Error( CV_StsBadArg, "Unknown interpolation method" );
 }
 
-
 static const void* initInterTab2D( int method, bool fixpt )
 {
+    // Modif ESP32: allocate buffers on heap
+    if(!tablesAllocated)
+        allocateTables();
+
     static bool inittab[INTER_MAX+1] = {false};
     float* tab = 0;
     short* itab = 0;
     int ksize = 0;
     if( method == INTER_LINEAR )
-        tab = BilinearTab_f[0][0], itab = BilinearTab_i[0][0], ksize=2;
+        tab = &BilinearTab_f[0], itab = &BilinearTab_i[0], ksize=2;
     else if( method == INTER_CUBIC )
-        tab = BicubicTab_f[0][0], itab = BicubicTab_i[0][0], ksize=4;
+        tab = &BicubicTab_f[0], itab = &BicubicTab_i[0], ksize=4;
     else if( method == INTER_LANCZOS4 )
-        tab = Lanczos4Tab_f[0][0], itab = Lanczos4Tab_i[0][0], ksize=8;
+        tab = &Lanczos4Tab_f[0], itab = &Lanczos4Tab_i[0], ksize=8;
     else
         CV_Error( CV_StsBadArg, "Unknown/unsupported interpolation type" );
 
@@ -234,8 +277,8 @@ static const void* initInterTab2D( int method, bool fixpt )
             for( j = 0; j < INTER_TAB_SIZE; j++, tab += ksize*ksize, itab += ksize*ksize )
             {
                 int isum = 0;
-                NNDeltaTab_i[i*INTER_TAB_SIZE+j][0] = j < INTER_TAB_SIZE/2;
-                NNDeltaTab_i[i*INTER_TAB_SIZE+j][1] = i < INTER_TAB_SIZE/2;
+                NNDeltaTab_i[i*INTER_TAB_SIZE+j+0] = j < INTER_TAB_SIZE/2;
+                NNDeltaTab_i[i*INTER_TAB_SIZE+j+1] = i < INTER_TAB_SIZE/2;
 
                 for( k1 = 0; k1 < ksize; k1++ )
                 {
@@ -1126,8 +1169,8 @@ public:
                             for( x1 = 0; x1 < bcols; x1++ )
                             {
                                 int a = sA[x1] & (INTER_TAB_SIZE2-1);
-                                XY[x1*2] = sXY[x1*2] + NNDeltaTab_i[a][0];
-                                XY[x1*2+1] = sXY[x1*2+1] + NNDeltaTab_i[a][1];
+                                XY[x1*2] = sXY[x1*2] + NNDeltaTab_i[a+0];
+                                XY[x1*2+1] = sXY[x1*2+1] + NNDeltaTab_i[a+1];
                             }
                         }
                     }
