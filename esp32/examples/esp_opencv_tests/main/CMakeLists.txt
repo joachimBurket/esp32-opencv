@@ -16,12 +16,14 @@ add_prebuilt_library(opencv_imgproc "opencv/libopencv_imgproc.a")
 add_prebuilt_library(opencv_core "opencv/libopencv_core.a")
 add_prebuilt_library(ade "opencv/libade.a")
 
-target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgcodecs)
-target_link_libraries(${COMPONENT_LIB} PRIVATE libpng)
-target_link_libraries(${COMPONENT_LIB} PRIVATE libzlib)
-target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgproc)
-target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_core)
-target_link_libraries(${COMPONENT_LIB} PRIVATE ade)
+set(IMGCODEC_DEP libpng libzlib)
+target_link_libraries(opencv_imgcodecs INTERFACE ${IMGCODEC_DEP})
+
+set(CORE_DEP libzlib)
+target_link_libraries(opencv_core INTERFACE ${CORE_DEP})
+
+set(OPENCV_DEP  opencv_imgcodecs opencv_imgproc opencv_core)
+target_link_libraries(${COMPONENT_LIB} ${OPENCV_DEP})
 
 # create spiffs partition (named 'storage') from the ../spiffs_image directory
 spiffs_create_partition_image(storage ../spiffs_images FLASH_IN_PROJECT)
