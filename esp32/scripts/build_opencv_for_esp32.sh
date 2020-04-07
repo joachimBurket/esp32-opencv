@@ -16,7 +16,7 @@ TOOLCHAIN_CMAKE_PATH=$HOME/esp/esp-idf/tools/cmake/toolchain-esp32.cmake
 LIB_INSTALL_PATH=$SCRIPTDIR/../lib
 
 # list of modules to compile
-OPENCV_MODULES_LIST=core,imgproc,imgcodecs
+OPENCV_MODULES_LIST=core,imgproc,imgcodecs,features2d,calib3d
 
 echo "################################################################################"
 echo "######################## build_opencv_for_esp32 script #########################"
