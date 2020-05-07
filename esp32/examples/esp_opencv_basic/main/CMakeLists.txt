@@ -1,7 +1,12 @@
-set(COMPONENT_SRCS "hello_opencv.cpp")
-set(COMPONENT_ADD_INCLUDEDIRS "." "./opencv/")
-register_component()
-
+idf_component_register(
+        SRCS
+            hello_opencv.cpp
+            
+        INCLUDE_DIRS
+            .
+            opencv/
+)
+            
 add_prebuilt_library(opencv_imgcodecs "opencv/libopencv_imgcodecs.a")
 add_prebuilt_library(libpng "opencv/3rdparty/liblibpng.a")
 add_prebuilt_library(libzlib "opencv/3rdparty/libzlib.a")
