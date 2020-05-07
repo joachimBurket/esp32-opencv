@@ -138,18 +138,75 @@ The first way is to simply get the pre-built OpenCV library in `esp32/lib/`_ fol
 Fast way:
 ---------
 
-The second way is by using the script in build_opencv_for_esp32.sh_. This script automatically compiles OpenCV from this repository sources, and install the needed files into the desired project. It can tweaked as needed to add and remove some parts. 
-
-The script has 2 arguments. The first is the path to the  ``toolchain-esp32.cmake`` (default is ``$HOME/esp/esp-idf/tools/cmake/toolchain-esp32.cmake``), and the second is the path where the OpenCV library is installed (default is in esp32/lib).
+The second way is by using the script in build_opencv_for_esp32.sh_. This script automatically compiles OpenCV from this repository sources, and install the needed files into the desired project. It can be tweaked as needed to add and remove some parts (see `esp32/doc/build_configurations.md`_). 
 
 .. _build_opencv_for_esp32.sh: esp32/scripts/build_opencv_for_esp32.sh
+
+.. _`esp32/doc/build_configurations.md`: esp32/doc/build_configurations.md
+
+The script has 2 arguments. The first is the path to the  ``toolchain-esp32.cmake`` (default is ``$HOME/esp/esp-idf/tools/cmake/toolchain-esp32.cmake``), and the second is the path where the OpenCV library is installed (default is in ``./esp32/lib``).
 
 Detailed way:
 -------------
 
-The last way explains all the commands and modifications done to be able to compile and run OpenCV on the ESP32. The detailed procedure is in detailed_build_procedure.md_.
+The last way explains all the commands and modifications done to be able to compile and run OpenCV on the ESP32. The detailed procedure is in `esp32/doc/detailed_build_procedure.md`_.
 
-.. _detailed_build_procedure.md: esp32/doc/detailed_build_procedure.md
+.. _`esp32/doc/detailed_build_procedure.md`: esp32/doc/detailed_build_procedure.md
+
+
+
+Compiling esp-idf project using OpenCV:
+=======================================
+
+When the OpenCV library is cross-compiled, we have in result ``*.a`` files located in ``build/lib`` folder. We now want to try to compile an example project using OpenCV on the esp32. A basic example of esp-idf project can be found in `esp32/examples/esp_opencv_basic/`_. This project simply creates an OpenCV matrix, fill it with values and prints it on the console. It's only purpose is to test the installation. 
+
+.. _`esp32/examples/esp_opencv_basic/`: esp32/examples/esp_opencv_basic/
+
+Esp-idf environment uses cmake and is separated in components. Because OpenCV libs were compiled outside this example project, we use the pre-built library functionality of esp-idf (https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#using-prebuilt-libraries-with-components).
+
+Here are the things done to add the OpenCV library to the project:
+
+- Copy the ``opencv/`` folder (from `esp32/lib/`_) into your project's ``main/`` component's folder. It contains the generated libraries (``libade.a``, ``libopencv_core.a``, ``libopencv_imgproc.a`` and ``libopencv_imgcodecs.a``) and some needed header files (e.g. ``cvconfig.h``, ``opencv_modules.hpp``, ``core.hpp``, ``core/`` folder, etc..). 
+
+.. _`esp32/lib/`: esp32/lib/
+
+- Link the libraries to the project by modifying the ``CMakeList.txt`` of the ``main`` project's component as below :
+
+  .. code:: cmake
+
+    idf_component_register(
+  	  SRC main.cpp
+  	  INCLUDE_DIRS ./opencv
+    )
+  
+    add_prebuilt_library(opencv_imgcodecs "opencv/libopencv_imgcodecs.a")
+    add_prebuilt_library(libpng "opencv/3rdparty/liblibpng.a")
+    add_prebuilt_library(libzlib "opencv/3rdparty/libzlib.a")
+    add_prebuilt_library(opencv_imgproc "opencv/libopencv_imgproc.a")
+    add_prebuilt_library(opencv_core "opencv/libopencv_core.a")
+    add_prebuilt_library(ade "opencv/libade.a")
+
+    set(IMGCODEC_DEP libpng libzlib)
+    target_link_libraries(opencv_imgcodecs INTERFACE ${IMGCODEC_DEP})
+
+    set(CORE_DEP libzlib)
+    target_link_libraries(opencv_core INTERFACE ${CORE_DEP})
+
+    set(OPENCV_DEP opencv_imgcodecs opencv_imgproc opencv_core)
+    target_link_libraries(${COMPONENT_LIB} ${OPENCV_DEP})
+
+
+- Finally, include the OpenCV headers needed into your source files: 
+
+  .. code:: c++
+
+    #include "opencv2/core.hpp"
+    #include "opencv2/imgproc.hpp"
+    #include "opencv2/imgcodecs.hpp"
+
+
+
+
 
 
 Get project RAM and Flash usages
@@ -167,6 +224,35 @@ At compilation time:
 - The file ``build/<project-name>.map`` is also very useful. It indicates the memory mapping of the variables and can be used to find big variables in the application. 
 
 
+- The commands ``idf.py size``, ``idf.py size-files`` and ``idf.py size-components`` are very useful to see the memory segments usage. They show more precise information, and also per file usage. For instance with the `esp32/examples/esp_opencv_basic/`_ project, the size used is : 
+
+  .. _`esp32/examples/esp_opencv_basic/`: esp32/examples/esp_opencv_basic/
+
+  .. code:: shell
+
+    Total sizes:
+      DRAM .data size:   21168 bytes
+      DRAM .bss  size:   13280 bytes
+      Used static DRAM:   34448 bytes ( 146288 available, 19.1% used)
+      Used static IRAM:   61849 bytes (  69223 available, 47.2% used)
+      Flash code:  843403 bytes
+      Flash rodata:  246200 bytes
+      Total image size:~1185900 bytes (.bin may be padded larger)
+
+  And for the `esp32/examples/esp_opencv_tests/`_ project, the size used is:
+
+  .. _`esp32/examples/esp_opencv_tests/`: esp32/examples/esp_opencv_tests/
+
+  .. code:: shell
+
+    Total sizes:
+      DRAM .data size:   31812 bytes
+      DRAM .bss  size:   14096 bytes
+      Used static DRAM:   45908 bytes ( 134828 available, 25.4% used)
+      Used static IRAM:   63741 bytes (  67331 available, 48.6% used)
+      Flash code: 1373491 bytes
+      Flash rodata:  347440 bytes
+      Total image size:~1830580 bytes (.bin may be padded larger)
 
 At run time:
 ------------
@@ -179,76 +265,35 @@ At run time:
   ESP_LOGI(TAG, "heap left: %d Bytes", esp_get_free_heap_size());
 
 
-Adding images codecs support
-============================
+DRAM region overflow
+====================
 
-Things done to read/writes images in JPEG, PNG, etc..
+Depending on which part of the OpenCV library is used, some big static variables can be present and the static DRAM can be overflowed. The following errors can appear: 
 
-PNG
----
+- dram overflow
+  .. code:: shell
 
-- Remove ``-DWITH_PNG=OFF`` and add ``-DBUILD_PNG=ON`` and ``-DBUILD_ZLIB=ON`` of the cmake command
+    .dram0.bss will not fit in region dram0_0_seg ;  region 'dram0_0_seg' overflowed by N bytes
 
-  - The lib ``opencv_imgcodecs.a`` build pass
-
-The library is compiled in the ``3rdparty/`` folder. Copy this folder into the esp32 example project folder.
-
-
-
-JPEG
-----
-
-- Remove ``-DWITH_JPEG=OFF`` and add ``-DBUILD_JPEG=ON`` of the cmake command
-
-  - Problem at compilation time. TODO
-
-
-
-Adding parallel support
-=======================
-
-TODO
-
-
-
-Removing OpenCV unnecessary parts 
-=================================
-
-Opencv is quite big, even when compiling only the core, imgproc and imgcodec modules. Because the ESP32 has limited resources, it is a good idea to remove some parts of opencv that are in most cases not used. 
-
-
-
-TODO: List the modules functionalities and what is kept or not
-
-Core module:
-------------
-
-
-
-
-Imgproc module:
----------------
-
-Colorspaces
-^^^^^^^^^^^
-
-Opencv supports multiple colorspaces (RGB, BGR, RGB565, RGBA, CIELAB, CIEXYZ, Luv, YUV, HSV, HLS, YCrCb, Bayer, Gray). All these colorspaces are not mandatory for an embedded system, so some are removed.
-
-- ``color_lab.cpp``: This file contains conversion for CIELAB and CIEXYZ (https://en.wikipedia.org/wiki/CIELAB_color_space). The conversion tables takes a lot of space in the .bss segment (~88kB) , which is already overflowing. Here are the steps done to disable this code:
-  
-  - Move ``color_lab.cpp`` to ``color_lab.cpp.bak`` 
-  
-  - In ``color.hpp`` disable :
-  
-    .. code:: c++
-
-      // todo
+- SHA256 digest overwrite
+  .. code::shell
     
-  - In ``color.cpp`` disable:
-  
-    .. code:: c++
+    A fatal error occurred: Contents of segment at SHA256 digest offset 0xb0 are not all zero. Refusing to overwrite.
+      
+The DRAM is the internal RAM section containing data. From the linker script ``esp-idf/components/esp32/ld/esp32.ld``, the ``dram_0_0_seg`` region has a size of ``0x2c200``, which corresponds to around ``180kB``. Due to some fixed RAM addresses used by the ESP32 ROM, there is a limit on the amount which can be statically allocated at compile time (see https://esp32.com/viewtopic.php?t=6699). To prevent this, there are some solutions:
 
-      // todo
-  
-- todo
+- If not used, disable Bluetooth and Trace Memory features from the menuconfig. Bluetooth stack uses 64kB and Trace Memory 16kB or 32kB (see https://docs.espressif.com/projects/esp-idf/en/latest/esp32/api-guides/general-notes.html#dram-data-ram)
+
+- In the menuconfig, the following options can also reduce internal DRAM usage: 
+
+  - In Component Config -> ESP32-specific -> Support for external, SPI-connected RAM -> SPI RAM config, enable : 
+    - "Try to allocate memories of WiFi and LWIP in SPIRAM firstly. If failed, allocate internal memory"
+    - "Allow .bss segment placed in external memory"
+    
+- Search for big static array that could be stored in external RAM
+  - In ``build/<project_name.map`` file of your project, look under the section ``.dram0.bss`` for big arrays
+  - ``idf.py size-files`` command is also useful
+  When big arrays are found, either apply the macro ``EXT_RAM_ATTR`` on them (only with option .bss segment placed in external memory enabled), or initialize them on the heap at runtime.
+    
+
 
