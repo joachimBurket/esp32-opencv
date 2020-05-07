@@ -287,12 +287,17 @@ The DRAM is the internal RAM section containing data. From the linker script ``e
 - In the menuconfig, the following options can also reduce internal DRAM usage: 
 
   - In Component Config -> ESP32-specific -> Support for external, SPI-connected RAM -> SPI RAM config, enable : 
+  
     - "Try to allocate memories of WiFi and LWIP in SPIRAM firstly. If failed, allocate internal memory"
+    
     - "Allow .bss segment placed in external memory"
     
 - Search for big static array that could be stored in external RAM
+
   - In ``build/<project_name.map`` file of your project, look under the section ``.dram0.bss`` for big arrays
+  
   - ``idf.py size-files`` command is also useful
+  
   When big arrays are found, either apply the macro ``EXT_RAM_ATTR`` on them (only with option .bss segment placed in external memory enabled), or initialize them on the heap at runtime.
     
 
