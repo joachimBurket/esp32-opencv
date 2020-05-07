@@ -1,6 +1,6 @@
 # Detailed build procedure
 
-The last way explains all the commands and modifications done to be able to compile and run OpenCV on the ESP32.
+This doc details all the commands and modifications done to be able to compile and run OpenCV on the ESP32.
 
 
 
@@ -173,61 +173,6 @@ make -j5
 ```
 
 When the compilation has ended, the libs are in the `build/lib` folder.
-
-
-
-## Compiling esp-idf project using OpenCV:
-
-When the OpenCV library is cross-compiled, we have in result `*.a` files located in `build/lib` folder. We now want to try to compile an example project using OpenCV on the esp32. A basic example of esp-idf project can be found in [esp32/examples/esp_opencv_basic](esp32/examples/esp_opencv_basic). This project simply creates an OpenCV matrix, fill it with values and prints it on the console.
-
-Esp-idf environment uses cmake and is separated in components. Because OpenCV libs were compiled outside this example project, we use the pre-built library functionality of esp-idf (https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#using-prebuilt-libraries-with-components).
-
-Here are the things done to add the OpenCV library to the project:
-
-* Create a folder named `opencv/` into the `main/` component's folder
-* Copy the generated libraries (`libade.a`, `libopencv_core.a`, `libopencv_imgproc.a` and `libopencv_imgcodecs.a`) into this directory
-* Create the folder `opencv2/` into this directory, and copy into it the needed headers files :
-  * `cvconfig.h`
-  * `opencv_modules.hpp`
-  * `opencv.hpp`
-  * `core.hpp`
-  * `imgproc.hpp`
-  * `imgcodecs.hpp`
-  * `core/` folder
-  * `imgproc/` folder
-  * `imgcodecs/` folder
-
-* Link the libraries to the project by modifying the `CMakeList.txt` of the `main` project's component is as below :
-
-  ```cmake
-  idf_component_register(
-  	SRC main.cpp
-  	INCLUDE_DIRS ./opencv
-  )
-  
-  # Be aware that the order of the librairies is important
-  add_prebuilt_library(opencv_imgcodecs "opencv/libopencv_imgcodecs.a")
-  add_prebuilt_library(libpng "opencv/3rdparty/liblibpng.a")
-  add_prebuilt_library(libzlib "opencv/3rdparty/libzlib.a")
-  add_prebuilt_library(opencv_imgproc "opencv/libopencv_imgproc.a")
-  add_prebuilt_library(opencv_core "opencv/libopencv_core.a")
-  add_prebuilt_library(ade "opencv/libade.a")
-  
-  target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgcodecs)
-  target_link_libraries(${COMPONENT_LIB} PRIVATE libpng)
-  target_link_libraries(${COMPONENT_LIB} PRIVATE libzlib)
-  target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_imgproc)
-  target_link_libraries(${COMPONENT_LIB} PRIVATE opencv_core)
-  target_link_libraries(${COMPONENT_LIB} PRIVATE ade)
-  ```
-
-* Finally, include the OpenCV headers needed into your source files: 
-
-  ```c++
-  #include "opencv2/core.hpp"
-  #include "opencv2/imgproc.hpp"
-  #include "opencv2/imgcodecs.hpp"
-  ```
 
 
 
@@ -418,3 +363,10 @@ When the `make` command compiles successfully, the library was tested with an ex
     * Disabling the Bluetooth (~56kB) and Trace Memory in the menuconfig
     * Disabling some OpenCV features not mandatory and taking lot of memory. To find variables taking too much space, the `build/<project-name>.map`  file is useful (looking for big variables under the `.dram0.bss` section).
     * `imgproc/color_lab.cpp` has variables (trilinearLUTE, InvGammaTab and LabCbrtTab) taking ~88 kB. They are used for colorspace conversions in and from CIE LAB and XYZ images. These functions were removed. 
+    
+  * TODO: There are maybe other ways to save space in this segment:
+  
+    * Allow .bss segment placed in external memory 
+      * This option of the menuconfig uses external RAM to store zero-initialized data from the lwIP, net80211, libpp and bluedroid libraries 
+    *  Additional data can be moved from the internal BSS segment to external RAM by applying the macro `EXT_RAM_ATTR` to any static declaration (which is not initialized to a non-zero value).
+    *  TODO: See what needs to be included and if it's possible to use this esp macro in OpenCV 
