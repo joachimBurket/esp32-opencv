@@ -257,6 +257,19 @@ At compilation time:
 At run time:
 ------------
 
+At startup, the application logs a summary of all heap available, e.g.: 
+
+.. code:: shell
+
+  I (252) heap_init: Initializing. RAM available for dynamic allocation:
+  I (259) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+  I (265) heap_init: At 3FFB2EC8 len 0002D138 (180 KiB): DRAM
+  I (272) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+  I (278) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+  I (284) heap_init: At 4008944C len 00016BB4 (90 KiB): IRAM
+
+It is also possible to get heap and task stack information with the following functions:
+
 .. code:: c++
 
   // Get the amount of stack (in Bytes) that remained unused when the task stack was at its greatest value
