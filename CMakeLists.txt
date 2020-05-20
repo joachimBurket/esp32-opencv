@@ -202,6 +202,9 @@ endif()
 # ESP32 target option. Enable it with -DESP32=ON will disable/modify parts of the code for compilation to work
 OCV_OPTION(ESP32 "Compilation for esp32 target" OFF)
 
+# ESP32 optimization. Enable it with -DESP32_OPTIMIZATION=ON will use code optimized for esp32 target
+OCV_OPTION(ESP32_OPTIMIZATION "Optimization for the esp32 target" OFF)
+
 OCV_OPTION(OPENCV_ENABLE_NONFREE "Enable non-free algorithms" OFF)
 
 # 3rd party libs
@@ -496,6 +499,12 @@ if(ESP32)
   message(STATUS "Enabled ESP32 target specific build")
   add_definitions(-DESP32)
 endif()
+
+if(ESP32_OPTIMIZATION)
+  message(STATUS "Enabled ESP32 target optimized code")
+  add_definitions(-DESP32_OPTIMIZATION)
+endif()
+
 
 if(ENABLE_IMPL_COLLECTION)
   add_definitions(-DCV_COLLECT_IMPL_DATA)
