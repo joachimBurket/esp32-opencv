@@ -178,9 +178,9 @@ When the compilation has ended, the libs are in the `build/lib` folder.
 
 ## Modified files for OpenCV to compile and run:
 
-To get the cmake configuration and make compilation to work, some modifications on OpenCV files had to be done. They are listed below.
+To get the cmake configuration, make compilation and an ESP32 project compilation to work, some modifications on OpenCV files had to be done. They are listed below.
 
-
+#### Configuration with CMake:
 
 A `cmake` option `ESP32` is added to the `CmakeLists.txt` : 
 
@@ -222,6 +222,8 @@ The `cmake` command is run, leading to the following errors:
     ```
 
 
+
+#### Compilation with Make:
 
 
 After these fixes, the command `make` is run, with some new errors:
@@ -327,6 +329,8 @@ After these fixes, the command `make` is run, with some new errors:
     ```
 
 
+
+#### Compilation of a project on the ESP32:
 
 When the `make` command compiles successfully, the library was tested with an example. This led to some new errors:
 
