@@ -107,7 +107,7 @@ When the `cmake` command works, the following summary is given:
 --   C/C++:
 --     Built as dynamic libs?:      NO
 --     C++ standard:                11
---     C++ Compiler:                /home/joachim/.espressif/tools/xtensa-esp32-elf/esp-2019r2-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-g++  (ver 8.2.0)
+--     C++ Compiler:                ~/.espressif/tools/xtensa-esp32-elf/esp-2019r2-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-g++  (ver 8.2.0)
 --     C++ flags (Release):         -mlongcalls -Wno-frame-address   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wuninitialized -Winit-self -Wsuggest-override -Wno-delete-non-virtual-dtor -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -fvisibility-inlines-hidden -O3 -DNDEBUG  -DNDEBUG
 --     C++ flags (Debug):           -mlongcalls -Wno-frame-address   -fsigned-char -W -Wall -Werror=return-type -Werror=non-virtual-dtor -Werror=address -Werror=sequence-point -Wformat -Werror=format-security -Wmissing-declarations -Wundef -Winit-self -Wpointer-arith -Wshadow -Wsign-promo -Wuninitialized -Winit-self -Wsuggest-override -Wno-delete-non-virtual-dtor -Wno-comment -Wimplicit-fallthrough=3 -Wno-strict-overflow -fdiagnostics-show-option -fomit-frame-pointer -ffunction-sections -fdata-sections  -fvisibility=hidden -fvisibility-inlines-hidden -g  -O0 -DDEBUG -D_DEBUG
 --     C Compiler:                  /home/joachim/.espressif/tools/xtensa-esp32-elf/esp-2019r2-8.2.0/xtensa-esp32-elf/bin/xtensa-esp32-elf-gcc
@@ -152,14 +152,14 @@ When the `cmake` command works, the following summary is given:
 --   Other third-party libraries:
 --     Custom HAL:                  NO
 -- 
---   Python (for build):            /home/joachim/.espressif/python_env/idf4.2_py2.7_env/bin/python2.7
+--   Python (for build):            ~/.espressif/python_env/idf4.2_py2.7_env/bin/python2.7
 -- 
---   Install to:                    /home/joachim/Documents/HES/02_MSE/22_master_thesis/esp32-opencv/build/install
+--   Install to:                    ~/esp32-opencv/build/install
 -- -----------------------------------------------------------------
 -- 
 -- Configuring done
 -- Generating done
--- Build files have been written to: /home/joachim/Documents/HES/02_MSE/22_master_thesis/esp32-opencv/build
+-- Build files have been written to: ~/esp32-opencv/build
 ```
 
 
@@ -234,58 +234,22 @@ After these fixes, the command `make` is run, with some new errors:
 
   * When there is an `#if defined(ANDROID)`, add ` || defined(ESP32)` after, so that `malloc.h` is included and `memalign` is used
   
-* *#error "<dirent.h> not supported"*
+* *glob.cpp: #error "<dirent.h> not supported"*
 
-  The ESP32 doesn't support directories (which are emulated with the filenames, like `mydir/mysubdir/myfile.c`).
+  The `glob.cpp` file includes the file `xtensa-esp32-elf/sys-include/dirent.h`, which includes `xtensa-esp32-elf/sys-include/sys/dirent.h`, which causes this error. This is because the filesystem related functions are defined in the ESP-IDF repository (in `components/vfs/`). The `vfs/include/sys/dirent.h` header must therefore be included in `glob.cpp:135` instead of `<dirent.h>`:
 
-  **FIX:** Modify `modules/core/src/glob.cpp`
-
-  * Add the following code after line 136:
-
-    ```c++
-    #if defined(ESP32)
-    #include <sys/stat.h>
-    const char dir_separators[] = "/";
-    
-    namespace {
-        struct dirent {
-            const char *d_name;
-        };
-    
-        struct DIR {
-            dirent ent;
-    
-            DIR() { }
-            ~DIR()
-            {
-                if (ent.d_name)
-                    delete[] ent.d_name;
-            }
-        };
-    
-        DIR* opendir(const char* path)
-        {
-            DIR* dir = new DIR;
-            dir->ent.d_name = 0;
-            // TODO implement (point the first file starting with 'path' in its name)
-            return dir;
-        }
-    
-        dirent* readdir(DIR* dir)
-        {
-            // TODO: implement (point to the next file with 'path' in its name)
-            return &(dir->ent);
-        }
-    
-        void closedir(DIR* dir)
-        {
-            delete dir;
-        }
-    }
-    ```
-
-    The function are not implemented yet. Must be implemented if files reading/writing in SPIFFS needed.
-
+  ``` c++
+#if defined(ESP32)
+  #include <sys/unistd.h>
+#include "esp_dirent.h"
+  #include <sys/stat.h>
+  const char dir_separators[] = "/";
+  #else
+  /* ... */
+  ```
+  
+  This `esp_dirent.h` file is the `vfs/include/sys/dirent.h` copied into `modules/core/src/` in OpenCV sources.
+  
 * *system.cpp:1002:20: error: 'mkstemp' was not declared in this scope*
 
   **FIX:**
