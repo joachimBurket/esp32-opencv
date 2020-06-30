@@ -660,8 +660,7 @@ include(cmake/OpenCVModule.cmake)
 #  Detect endianness of build platform
 # ----------------------------------------------------------------------------
 
-# if not working while compiling for esp32, change the next line in 'if(IOS OR ESP32)'
-if(IOS)
+if(IOS OR ESP32)
   # test_big_endian needs try_compile, which doesn't work for iOS
   # http://public.kitware.com/Bug/view.php?id=12288
   set(WORDS_BIGENDIAN 0)

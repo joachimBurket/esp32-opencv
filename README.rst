@@ -257,6 +257,19 @@ At compilation time:
 At run time:
 ------------
 
+At startup, the application logs a summary of all heap available, e.g.: 
+
+.. code:: shell
+
+  I (252) heap_init: Initializing. RAM available for dynamic allocation:
+  I (259) heap_init: At 3FFAE6E0 len 00001920 (6 KiB): DRAM
+  I (265) heap_init: At 3FFB2EC8 len 0002D138 (180 KiB): DRAM
+  I (272) heap_init: At 3FFE0440 len 00003AE0 (14 KiB): D/IRAM
+  I (278) heap_init: At 3FFE4350 len 0001BCB0 (111 KiB): D/IRAM
+  I (284) heap_init: At 4008944C len 00016BB4 (90 KiB): IRAM
+
+It is also possible to get heap and task stack information with the following functions:
+
 .. code:: c++
 
   // Get the amount of stack (in Bytes) that remained unused when the task stack was at its greatest value
@@ -287,12 +300,17 @@ The DRAM is the internal RAM section containing data. From the linker script ``e
 - In the menuconfig, the following options can also reduce internal DRAM usage: 
 
   - In Component Config -> ESP32-specific -> Support for external, SPI-connected RAM -> SPI RAM config, enable : 
+  
     - "Try to allocate memories of WiFi and LWIP in SPIRAM firstly. If failed, allocate internal memory"
+    
     - "Allow .bss segment placed in external memory"
     
 - Search for big static array that could be stored in external RAM
+
   - In ``build/<project_name.map`` file of your project, look under the section ``.dram0.bss`` for big arrays
+  
   - ``idf.py size-files`` command is also useful
+  
   When big arrays are found, either apply the macro ``EXT_RAM_ATTR`` on them (only with option .bss segment placed in external memory enabled), or initialize them on the heap at runtime.
     
 

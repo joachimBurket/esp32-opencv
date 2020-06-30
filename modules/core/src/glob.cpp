@@ -133,44 +133,10 @@ namespace
 }
 #else
 #if defined(ESP32)
+#include <sys/unistd.h>
+#include "esp_dirent.h"
 #include <sys/stat.h>
 const char dir_separators[] = "/";
-
-namespace {
-    struct dirent {
-        const char *d_name;
-    };
-
-    struct DIR {
-        dirent ent;
-
-        DIR() { }
-        ~DIR()
-        {
-            if (ent.d_name)
-                delete[] ent.d_name;
-        }
-    };
-
-    DIR* opendir(const char* path)
-    {
-        DIR* dir = new DIR;
-        dir->ent.d_name = 0;
-        // TODO implement (point the first file starting with 'path' in its name)
-        return dir;
-    }
-
-    dirent* readdir(DIR* dir)
-    {
-        // TODO: implement (point to the next file with 'path' in its name)
-        return &(dir->ent);
-    }
-
-    void closedir(DIR* dir)
-    {
-        delete dir;
-    }
-}
 #else
 # include <dirent.h>
 # include <sys/stat.h>

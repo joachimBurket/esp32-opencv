@@ -67,7 +67,7 @@ cp $SCRIPTDIR/resources/alloc_fix.cpp ./3rdparty/ade/ade-0.1.1f/sources/ade/sour
 echo "================================================================================"
 echo "Compiling with make -j"
 echo "================================================================================"
-make -j
+make -j3
 
 ### installing in output directory ###
 echo "================================================================================"
