@@ -239,16 +239,14 @@ After these fixes, the command `make` is run, with some new errors:
   The `glob.cpp` file includes the file `xtensa-esp32-elf/sys-include/dirent.h`, which includes `xtensa-esp32-elf/sys-include/sys/dirent.h`, which causes this error. This is because the filesystem related functions are defined in the ESP-IDF repository (in `components/vfs/`). The `vfs/include/sys/dirent.h` header must therefore be included in `glob.cpp:135` instead of `<dirent.h>`:
 
   ```c++
-#if defined(ESP32)
+  #if defined(ESP32)
   #include <sys/unistd.h>
-#include "esp_dirent.h"
+  #include "esp_dirent.h"
   #include <sys/stat.h>
   const char dir_separators[] = "/";
   #else
   /* ... */
   ```
-  
-  
   
   This `esp_dirent.h` file is the `vfs/include/sys/dirent.h` copied into `modules/core/src/` in OpenCV sources.
   
