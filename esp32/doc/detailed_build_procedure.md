@@ -296,7 +296,7 @@ After these fixes, the command `make` is run, with some new errors:
 
 
 
-#### Compilation of a project on the ESP32:
+#### Compilation of an ESP-IDF project:
 
 When the `make` command compiles successfully, the library was tested with an example. This led to some new errors:
 

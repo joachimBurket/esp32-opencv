@@ -196,16 +196,14 @@ Here are the things done to add the OpenCV library to the project:
     target_link_libraries(${COMPONENT_LIB} ${OPENCV_DEP})
 
 
-- Finally, include the OpenCV headers needed into your source files: 
+- Finally, include the OpenCV headers needed into your source files. The ``EPS`` macro defined in FreeRTOS causes conflicts with the epsilon variable in OpenCV. This is why the macro must be undef before OpenCV is included:
 
   .. code:: c++
-
+    #undef EPS
     #include "opencv2/core.hpp"
     #include "opencv2/imgproc.hpp"
     #include "opencv2/imgcodecs.hpp"
-
-
-
+    #define EPS 192
 
 
 
