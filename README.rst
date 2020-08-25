@@ -158,9 +158,9 @@ The last way explains all the commands and modifications done to be able to comp
 Compiling esp-idf project using OpenCV:
 =======================================
 
-When the OpenCV library is cross-compiled, we have in result ``*.a`` files located in ``build/lib`` folder. We now want to try to compile an example project using OpenCV on the esp32. A basic example of esp-idf project can be found in `esp32/examples/esp_opencv_basic/`_. This project simply creates an OpenCV matrix, fill it with values and prints it on the console. It's only purpose is to test the installation. 
+When the OpenCV library is cross-compiled, we have in result ``*.a`` files located in ``build/lib`` folder. We now want to try to compile an example project using OpenCV on the esp32. A basic example of esp-idf project can be found in `esp32/examples/hello_opencv/`_. This project simply creates an OpenCV matrix, fill it with values and prints it on the console. It's only purpose is to test the installation. 
 
-.. _`esp32/examples/esp_opencv_basic/`: esp32/examples/esp_opencv_basic/
+.. _`esp32/examples/hello_opencv/`: esp32/examples/hello_opencv/
 
 Esp-idf environment uses cmake and is separated in components. Because OpenCV libs were compiled outside this example project, we use the pre-built library functionality of esp-idf (https://docs.espressif.com/projects/esp-idf/en/latest/api-guides/build-system.html#using-prebuilt-libraries-with-components).
 
@@ -222,9 +222,9 @@ At compilation time:
 - The file ``build/<project-name>.map`` is also very useful. It indicates the memory mapping of the variables and can be used to find big variables in the application. 
 
 
-- The commands ``idf.py size``, ``idf.py size-files`` and ``idf.py size-components`` are very useful to see the memory segments usage. They show more precise information, and also per file usage. For instance with the `esp32/examples/esp_opencv_basic/`_ project, the size used is : 
+- The commands ``idf.py size``, ``idf.py size-files`` and ``idf.py size-components`` are very useful to see the memory segments usage. They show more precise information, and also per file usage. For instance with the `esp32/examples/hello_opencv/`_ project, the size used is : 
 
-  .. _`esp32/examples/esp_opencv_basic/`: esp32/examples/esp_opencv_basic/
+  .. _`esp32/examples/hello_opencv/`: esp32/examples/hello_opencv/
 
   .. code:: shell
 
