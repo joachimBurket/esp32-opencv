@@ -51,13 +51,13 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "sdkconfig.h"
 
 /*Rotation Defines*/
-#define MADCTL_MY  0x80
-#define MADCTL_MX  0x40
-#define MADCTL_MV  0x20
+#define MADCTL_MY  0x80     // Y-mirror
+#define MADCTL_MX  0x40     // X-mirror
+#define MADCTL_MV  0x20     // X-Y exchange
 #define MADCTL_ML  0x10
 #define MADCTL_RGB 0x00
 #define MADCTL_BGR 0x08
-#define MADCTL_MH  0x04
+#define MADCTL_MH  0x04     // Horizontal lcd refresh direction
 
 
 #define SWAPBYTES(i) ((i>>8) | (i<<8))
@@ -103,6 +103,22 @@ void CEspLcd::setSpiBus(lcd_conf_t *lcd_conf)
 
 void CEspLcd::setAddrWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
 {
+    /*
+     * If screen is 240x240, an offset must be added when Y is mirrored because
+     * st7789 controller is for 320x240 and therefore the starting address is 80
+     * pixels below the screen.
+     * TODO: adding a start_x and start_y would be cleaner and safer
+     */
+    if(m_width == 240 && m_height == 240) {
+        if (rotation == 2) {            // Y is mirrored
+            y0 += 80;
+            y1 += 80;
+        } else if (rotation == 3) {     // X-Y are exchanged
+            x0 += 80;
+            x1 += 80;
+        }
+    }
+
     xSemaphoreTakeRecursive(spi_mux, portMAX_DELAY);
     transmitCmdData(LCD_CASET, MAKEWORD(x0 >> 8, x0 & 0xFF, x1 >> 8, x1 & 0xFF));
     transmitCmdData(LCD_PASET, MAKEWORD(y0 >> 8, y0 & 0xFF, y1 >> 8, y1 & 0xFF));
@@ -409,22 +425,22 @@ void CEspLcd::setRotation(uint8_t m)
     uint8_t data = 0;
     rotation = m % 4;  //Can't be more than 3
     switch (rotation) {
-    case 0:
+    case 0:     // 0°
         data = MADCTL_MX | MADCTL_BGR;
         _width = m_width;
         _height = m_height;
         break;
-    case 1:
+    case 1:     // 90°  (counterclockwise)
         data = MADCTL_MV | MADCTL_BGR;
         _width = m_height;
         _height = m_width;
         break;
-    case 2:
+    case 2:     // 180° (counterclockwise)
         data = MADCTL_MY | MADCTL_BGR;
         _width = m_width;
         _height = m_height;
         break;
-    case 3:
+    case 3:     // 270° (counterclockwise)
         data = MADCTL_MX | MADCTL_MY | MADCTL_MV | MADCTL_BGR;
         _width = m_height;
         _height = m_width;
