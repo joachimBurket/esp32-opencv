@@ -41,16 +41,19 @@ void demo_task(void *arg) {
     disp_infos();
 
     while(true) {
+        auto start = esp_timer_get_time();
 
         camera_fb_t *fb = esp_camera_fb_get();
 
         if (!fb) {
             ESP_LOGE(TAG, "Camera capture failed");
         } else {
-            TFT_jpg_image(CENTER, 0, 0, -1, NULL, fb->buf, fb->len);
+            TFT_jpg_image(CENTER, CENTER, 0, -1, NULL, fb->buf, fb->len);
             esp_camera_fb_return(fb);
             fb = NULL;
         }
+
+        ESP_LOGI(TAG, "time taken: %lld ms", (esp_timer_get_time() - start) / 1000);
 
 #if 0   // TODO: next step..
         Mat inputImage(fb->height, fb->width, CV_8UC2, fb->buf);      // rgb565 is 2 channels of 8-bit unsigned
@@ -102,6 +105,8 @@ void app_main()
 
     /* Display memory infos */
     disp_infos();
+
+    ESP_LOGI(TAG, "Display width = %d, height = %d", tft->width(), tft->height());
 
     /* Start the tasks */
     xTaskCreatePinnedToCore(demo_task, "demo", 1024 * 9, nullptr, 24, nullptr, 0);

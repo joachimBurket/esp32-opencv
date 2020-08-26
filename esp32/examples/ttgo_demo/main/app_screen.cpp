@@ -237,10 +237,8 @@ static UINT tjd_output(
             }
         }
 
-        // ESP_LOGI(TAG, "x1:%d y1:%d x2:%d y2:%d\n", dleft, dtop, dright, dbottom);
-        tft->transmitCmdData(LCD_CASET, MAKEWORD(dleft >> 8, dleft & 0xFF, dright >> 8, dright & 0xFF));
-        tft->transmitCmdData(LCD_PASET, MAKEWORD(dtop >> 8, dtop & 0xFF, dbottom >> 8, dbottom & 0xFF));
-        tft->transmitCmd(LCD_RAMWR); // write to RAM
+        //ESP_LOGI(TAG, "x1:%d x2:%d y1:%d y2:%d\n", dleft, dright, dtop, dbottom);
+        tft->setAddrWindow(dleft, dtop, dright, dbottom);
 
         uint16_t *p = (uint16_t *)malloc(sizeof(uint16_t) * len);
         if (!p) {
@@ -250,7 +248,7 @@ static UINT tjd_output(
         for (uint32_t i = 0; i < len; i++) {
             p[i] = tft->color565(dev->linbuf[dev->linbuf_idx][i].r, dev->linbuf[dev->linbuf_idx][i].g, dev->linbuf[dev->linbuf_idx][i].b);
         }
-        tft->_fastSendBuf(p, len);
+        tft->_fastSendBuf(p, len, true);        // TODO: Swapping bytes directly in the camera register could enhance display
         free(p);
 
         dev->linbuf_idx = ((dev->linbuf_idx + 1) & 1);
@@ -450,7 +448,7 @@ void lvgl_lcd_hal_init()
 
     /*screen initialize*/
     tft->invertDisplay(true);
-    tft->setRotation(0);
+    tft->setRotation(2);        // rotation needed if camera is on the back of the device
     tft->fillScreen(COLOR_BLACK);
 
     lv_disp_drv_t disp_drv;         /*Descriptor of a display driver*/
