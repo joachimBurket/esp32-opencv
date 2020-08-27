@@ -1,37 +1,37 @@
 idf_component_register(
         SRC_DIRS
             .
-            lvgl/lv_core
-            lvgl/lv_draw
-            lvgl/lv_fonts
-            lvgl/lv_hal
-            lvgl/lv_misc
-            lvgl/lv_objx
-            lvgl/lv_themes
+            lvgl/src/lv_core
+            lvgl/src/lv_draw
+            lvgl/src/lv_font
+            lvgl/src/lv_hal
+            lvgl/src/lv_misc
+            lvgl/src/lv_widgets
+            lvgl/src/lv_themes
 
         INCLUDE_DIRS
             .
             include
             lvgl
-            lvgl/lv_core
-            lvgl/lv_draw
-            lvgl/lv_fonts
-            lvgl/lv_hal
-            lvgl/lv_misc
-            lvgl/lv_objx
-            lvgl/lv_themes
+            lvgl/src/lv_core
+            lvgl/src/lv_draw
+            lvgl/src/lv_font
+            lvgl/src/lv_hal
+            lvgl/src/lv_misc
+            lvgl/src/lv_widgets
+            lvgl/src/lv_themes
 
         PRIV_INCLUDE_DIRS
             .
             include
             lvgl
-            lvgl/lv_core
-            lvgl/lv_draw
-            lvgl/lv_fonts
-            lvgl/lv_hal
-            lvgl/lv_misc
-            lvgl/lv_objx
-            lvgl/lv_themes
+            lvgl/src/lv_core
+            lvgl/src/lv_draw
+            lvgl/src/lv_font
+            lvgl/src/lv_hal
+            lvgl/src/lv_misc
+            lvgl/src/lv_widgets
+            lvgl/src/lv_themes
 
         PRIV_REQUIRES
             main

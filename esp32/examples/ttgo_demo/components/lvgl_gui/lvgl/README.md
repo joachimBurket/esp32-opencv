@@ -1,69 +1,160 @@
-# Littlev Graphics Library
+<h1 align="center"> LVGL - Light and Versatile Graphics Library</h1>
 
-![LittlevGL cover](https://littlevgl.com/docs/themes/lv_theme_intro.png)
+<p align="center">
+<img src="https://lvgl.io/assets/images/img_1.png">
+</p>
 
-**LittlevGL provides everything you need to create a Graphical User Interface (GUI) on embedded systems with easy-to-use graphical elements, beautiful visual effects and low memory footprint.**  
-https://littlevgl.com
+<p align="center">
+LVGL provides everything you need to create embedded GUI with easy-to-use graphical elements, beautiful visual effects and low memory footprint. 
+</p>
 
-## Key features
-* **Powerful building blocks** buttons, charts, lists, sliders, images, etc.
-* **Advanced graphics** with animations, anti-aliasing, opacity, smooth scrolling
-* **Various input devices** touch pad, mouse, keyboard, encoder, buttons, etc.
-* **Multi-language support** with UTF-8 encoding
-* **Fully customizable** graphical elements
-* **Hardware independent** to use with any microcontroller or display
-* **Scalable** to operate with little memory (50 kB Flash, 10 kB RAM)
-* **OS, External memory and GPU** supported but not required
-* **Single frame buffer** operation even with advances graphical effects
-* **Written in C** for maximal compatibility
-* **Simulator** to develop on PC without embedded hardware
-* **Tutorials, examples, themes** for rapid development
-* **Documentation** and API references online
+<h4 align="center">
+<a href="https://lvgl.io">Website </a> &middot; 
+<a href="https://lvgl.io/demos">Online demo</a> &middot; 
+<a href="https://docs.lvgl.io/">Docs</a> &middot; 
+<a href="https://forum.lvgl.io">Forum</a>
+</h4>
 
-## Porting
-In the simplest case you need 5 things:
-1. Call `lv_tick_inc(x)` every `x` milliseconds in a Timer or Task (`x` should be between 1 and 10)
-2. Register a function which can **copy a pixel array** to an area of the screen.
-3. Register a function which can **read an input device**. (E.g. touch pad)
-4. Copy `lv_conf_templ.h` as `lv_conf.h` and set at least `LV_HOR_RES`, `LV_VER_RES` and `LV_COLOR_DEPTH`. 
-5. Call `lv_task_handler()` periodically every few milliseconds.
-For a detailed description visit https://littlevgl.com/porting
-Or check the [Porting tutorial](https://github.com/littlevgl/lv_examples/blob/master/lv_tutorial/0_porting/lv_tutorial_porting.c)
- 
-## Project set-up
-1. **Clone** or [Download](https://littlevgl.com/download) the lvgl repository: `git clone  https://github.com/littlevgl/lvgl.git`
-2. **Create project** with your preferred IDE and add the *lvgl* folder
-3. Copy **lvgl/lv_conf_templ.h** as **lv_conf.h** next to the *lvgl* folder
-4. In the lv_conf.h delete the first `#if 0` and its `#endif`. Leave the default configuration for the first try.
-5. In your *main.c*: #include "lvgl/lvgl.h"   
-6. In your *main function*:
-   * lvgl_init();
-   * tick, display and input device initialization (see above)
-7. To **test** create a label: `lv_obj_t * label = lv_label_create(lv_scr_act(), NULL);`  
-8. In the main *while(1)* call `lv_task_handler();` and make a few milliseconds delay (e.g. `my_delay_ms(5);`) 
-9. Compile the code and load it to your embedded hardware
+---
 
-## PC Simulator
-You can test the graphics library in a PC simulator, if you don't have an embedded hardware. The simulator uses [SDL2](https://www.libsdl.org/) library to emulate a display on your monitor and a touch pad with your mouse.
+## Features
+* Powerful [building blocks](https://docs.lvgl.io/latest/en/html/widgets/index.html): buttons, charts, lists, sliders, images, etc.
+* Advanced graphics: animations, anti-aliasing, opacity, smooth scrolling
+* Use [various input devices](https://docs.lvgl.io/latest/en/html/overview/indev.html): touchscreen, mouse, keyboard, encoder, buttons, etc.
+* Use [multiple displays](https://docs.lvgl.io/latest/en/html/overview/display.html): e.g. monochrome and color display
+* Hardware independent to use with any microcontroller or display
+* Scalable to operate with little memory (64 kB Flash, 10 kB RAM)
+* Multi-language support with UTF-8 handling, Bidirectional and Arabic script support
+* Fully customizable graphical elements via [CSS-like styles](https://docs.lvgl.io/latest/en/html/overview/style.html)
+* OS, External memory and GPU are supported but not required
+* Smooth rendering even with a [single frame buffer](https://docs.lvgl.io/latest/en/html/porting/display.html)
+* Written in C for maximal compatibility (C++ compatible)
+* Micropython Binding exposes [LVGL API in Micropython](https://blog.lvgl.io/2019-02-20/micropython-bindings)
+* [Simulator](https://docs.lvgl.io/latest/en/html/get-started/pc-simulator.html) to develop on PC without embedded hardware
+* [Examples](lv_examples) and tutorials for rapid development
+* [Documentation](http://docs.lvgl.io/) and API references
 
-There is a pre-configured PC project for **Eclipse CDT** in this repository: https://github.com/littlevgl/pc_simulator
+## Requirements
+Basically, every modern controller (which is able to drive a display) is suitable to run LVGL. The minimal requirements are:
 
-## Related repositories
-* PC simulator: https://github.com/littlevgl/pc_simulator
-* Projects: https://github.com/littlevgl/lv_projects
-* Examples: https://github.com/littlevgl/lv_examples
-* Drivers: https://github.com/littlevgl/lv_drivers
+<table>
+  <tr>
+    <td> <strong>Name</strong> </td>
+    <td><strong>Minimal</strong></td>
+    <td><strong>Recommended</strong></td>
+  </tr>
+  <tr>
+    <td><strong>Architecture</strong></td>
+    <td colspan="2">16, 32 or 64 bit microcontroller or processor</td>
+  </tr>
+  <tr>
+    <td> <strong>Clock</strong></td>
+    <td> &gt; 16 MHz </td>
+    <td> &gt; 48 MHz</td>
+  </tr>
+  
+  <tr>
+    <td> <strong>Flash/ROM</strong></td>
+    <td> &gt; 64 kB </td>
+    <td> &gt; 180 kB</td>
+  </tr>
+  
+  <tr>
+    <td> <strong>Static RAM</strong></td>
+    <td> &gt; 2 kB </td>
+    <td> &gt; 4 kB</td>
+  </tr>
+  
+  <tr>
+    <td> <strong>Stack</strong></td>
+    <td> &gt; 2 kB </td>
+    <td> &gt; 8 kB</td>
+  </tr>
+  
+  <tr>
+    <td> <strong>Heap</strong></td>
+    <td> &gt; 2 kB </td>
+    <td> &gt; 8 kB</td>
+  </tr>
+  
+  <tr>
+    <td> <strong>Display buffer</strong></td>
+    <td> &gt; 1 &times; <em>hor. res.</em> pixels </td>
+    <td> &gt; 10 &times; <em>hor. res.</em> pixels </td>
+  </tr>
+  
+  <tr>
+    <td> <strong>Compiler</strong></td>
+    <td colspan="2"> C99 or newer </td>
+  </tr>
+</table>
 
-## Screenshots
-![TFT material](http://www.gl.littlev.hu/github_res/tft_material.png)
-![TFT zen](http://www.gl.littlev.hu/github_res/tft_zen.png)
-![TFT alien](http://www.gl.littlev.hu/github_res/tft_alien.png)
-![TFT night](http://www.gl.littlev.hu/github_res/tft_night.png)
+*Note that the memory usage might vary depending on the architecture, compiler and build options.*
+
+Just to mention some platforms:
+- STM32F1, STM32F3, STM32F4, STM32F7, STM32L4, STM32L5, STM32H7
+- Microchip dsPIC33, PIC24, PIC32MX, PIC32MZ
+- NXP: Kinetis, LPC, iMX, iMX RT
+- [Linux frame buffer](https://blog.lvgl.io/2018-01-03/linux_fb) (/dev/fb)
+- [Raspberry Pi](http://www.vk3erw.com/index.php/16-software/63-raspberry-pi-official-7-touchscreen-and-littlevgl)
+- [Espressif ESP32](https://github.com/lvgl/lv_port_esp32)
+- [Infineon Aurix](https://github.com/lvgl/lv_port_aurix)
+- Nordic NRF52 Bluetooth modules
+- Quectel modems
+
+## Get started
+This list shows the recommended way of learning the library:
+1. Check the [Online demos](https://lvgl.io/demos) to see LVGL in action (3 minutes)
+2. Read the [Introduction](https://docs.lvgl.io/latest/en/html/intro/index.html) page of the documentation (5 minutes)
+3. Get familiar with the basics on the [Quick overview](https://docs.lvgl.io/latest/en/html/get-started/quick-overview.html) page (15 minutes)
+4. Set up a [Simulator](https://docs.lvgl.io/latest/en/html/get-started/pc-simulator.html) (10 minutes)
+5. Try out some [Examples](https://github.com/lvgl/lv_examples/)
+6. Port LVGL to a board. See the [Porting](https://docs.lvgl.io/latest/en/html/porting/index.html) guide or check the ready to use [Projects](https://github.com/lvgl?q=lv_port_&type=&language=)
+7. Read the [Overview](https://docs.lvgl.io/latest/en/html/overview/index.html) page to get a better understanding of the library (2-3 hours)
+8. Check the documentation of the [Widgets](https://docs.lvgl.io/latest/en/html/widgets/index.html) to see their features and usage
+9. If you have questions go to the [Forum](http://forum.lvgl.io/)
+10. Read the [Contributing](https://docs.lvgl.io/latest/en/html/contributing/index.html) guide to see how you can help to improve LVGL (15 minutes) 
+
+## Examples 
+
+For more examples see the [lv_examples](https://github.com/lvgl/lv_examples) repository.
+
+### Button with label
+```c
+lv_obj_t * btn = lv_btn_create(lv_scr_act(), NULL);     /*Add a button the current screen*/
+lv_obj_set_pos(btn, 10, 10);                            /*Set its position*/
+lv_obj_set_size(btn, 100, 50);                          /*Set its size*/
+lv_obj_set_event_cb(btn, btn_event_cb);                 /*Assign a callback to the button*/
+
+lv_obj_t * label = lv_label_create(btn, NULL);          /*Add a label to the button*/
+lv_label_set_text(label, "Button");                     /*Set the labels text*/
+
+...
+
+void btn_event_cb(lv_obj_t * btn, lv_event_t event)
+{
+    if(event == LV_EVENT_CLICKED) {
+        printf("Clicked\n");
+    }
+}
+```
+![LVGL button with label example](https://raw.githubusercontent.com/lvgl/docs/latest/misc/simple_button_example.gif)
+
+### LVGL from Micropython
+Learn more about [Micropython](https://docs.lvgl.io/latest/en/html/get-started/micropython.html).
+```python
+# Create a Button and a Label
+scr = lv.obj()
+btn = lv.btn(scr)
+btn.align(lv.scr_act(), lv.ALIGN.CENTER, 0, 0)
+label = lv.label(btn)
+label.set_text("Button")
+
+# Load the screen
+lv.scr_load(scr)
+```
 
 ## Contributing
-See [CONTRIBUTING.md](https://github.com/littlevgl/lvgl/blob/master/docs/CONTRIBUTING.md)
+LVGL is an open project and contribution is very welcome. There are many ways to contribute from simply speaking about your project, through writing examples, improving the documentation, fixing bugs to hosing your own project under in LVGL.
 
-## Donate
-If you are pleased with this graphics library, found it useful, or are happy with the support you got, please help its further development:
-
-[![Donate](https://littlevgl.com/donate_dir/donate_btn.png)](https://littlevgl.com/donate)
+For a detailed description of contribution opportunities visit the [Contributing](https://docs.lvgl.io/latest/en/html/contributing/index.html) section of the documentation.
