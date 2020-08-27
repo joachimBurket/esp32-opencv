@@ -202,7 +202,7 @@ CONFIG_SPI_SLAVE_ISR_IN_IRAM=y
 #
 # RTCIO configuration
 #
-# CONFIG_RTCIO_SUPPORT_RTC_GPIO_DESC is not set
+CONFIG_RTCIO_SUPPORT_RTC_GPIO_DESC=y
 # end of RTCIO configuration
 # end of Driver configurations
 
