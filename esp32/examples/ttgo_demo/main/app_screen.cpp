@@ -5,6 +5,7 @@
 #include <errno.h>
 #include <sys/stat.h>
 #include <string.h>
+#include "esp_freertos_hooks.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 #include "esp_system.h"
@@ -398,33 +399,58 @@ exit:
 		fclose(dev.fhndl); // close input file
 }
 
+// =====================================================================================================================
+// lvgl
+// =====================================================================================================================
 
 #include "lvgl.h"
 
-/*Write the internal buffer (VDB) to the display. 'lv_flush_ready()' has to be called when finished*/
-static void ex_disp_flush(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t *color_p)
+/* lvgl internal graphics buffers */
+#define DISP_BUF_SIZE LV_HOR_RES_MAX * 24       // Horizontal resolution X number of lines sent to the driver
+static lv_disp_buf_t disp_buf;
+static lv_color_t buf_1[DISP_BUF_SIZE];
+static lv_color_t buf_2[DISP_BUF_SIZE];
+
+/*Write the internal buffer to the display. 'lv_flush_ready()' has to be called when finished*/
+static void ex_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_color_t *color_p)
 {
-    tft->drawBitmap((int16_t)x1, (int16_t)y1, (const uint16_t *)color_p, (int16_t)(x2 - x1 + 1), (int16_t)(y2 - y1 + 1));
+    tft->drawBitmap((int16_t)area->x1, (int16_t)area->y1, (const uint16_t *)color_p, (int16_t)(area->x2 - area->x1 + 1), (int16_t)(area->y2 - area->y1 + 1));
     /* IMPORTANT!!!
      * Inform the graphics library that you are ready with the flushing*/
-    lv_flush_ready();
+    lv_disp_t *disp = _lv_refr_get_disp_refreshing();
+    lv_disp_flush_ready(&disp->driver);
 }
 
-/*Fill an area with a color on the display*/
-static void ex_disp_fill(int32_t x1, int32_t y1, int32_t x2, int32_t y2, lv_color_t color)
+/*Calls `lv_tick_inc()` at regular interval to inform lvgl of elapsed time*/
+static void IRAM_ATTR lv_tick_cb(void) {
+    lv_tick_inc(portTICK_RATE_MS);
+}
+
+void lvgl_init()
 {
-    tft->fillRect((int16_t)x1, (int16_t)y1, (int16_t)(x2 - x1 + 1), (int16_t)(y2 - y1 + 1), (uint16_t)color.full);
+    /* register lvgl tick callback function */
+    esp_register_freertos_tick_hook(lv_tick_cb);
+
+    /*lvgl initialize*/
+    lv_init();
+
+    /* init display buffers */
+    lv_disp_buf_init(&disp_buf, buf_1, buf_2, DISP_BUF_SIZE);
+
+    /* screen driver */
+    lv_disp_drv_t disp_drv;         /*Descriptor of a display driver*/
+    lv_disp_drv_init(&disp_drv);    /*Basic initialization*/
+
+    disp_drv.flush_cb = ex_disp_flush;
+    disp_drv.buffer = &disp_buf;
+
+    /* Finally register the driver */
+    lv_disp_drv_register(&disp_drv);
 }
 
-/*Write pixel map (e.g. image) to the display*/
-static void ex_disp_map(int32_t x1, int32_t y1, int32_t x2, int32_t y2, const lv_color_t *color_p)
-{
-    tft->drawBitmap((int16_t)x1, (int16_t)y1, (const uint16_t *)color_p, (int16_t)(x2 - x1 + 1), (int16_t)(y2 - y1 + 1));
-}
-
+// todo: separate lcv_hal_init() and lvgl_init()
 void lvgl_lcd_hal_init()
 {
-
 	lcd_conf_t lcd_pins = {
         .lcd_model = LCD_MOD_ST7789,
         .pin_num_miso = TFT_MISO,
@@ -448,20 +474,9 @@ void lvgl_lcd_hal_init()
 
     /*screen initialize*/
     tft->invertDisplay(true);
-    tft->setRotation(2);        // rotation needed if camera is on the back of the device
+    tft->setRotation(0);
     tft->fillScreen(COLOR_BLACK);
 
-    lv_disp_drv_t disp_drv;         /*Descriptor of a display driver*/
-    lv_disp_drv_init(&disp_drv);    /*Basic initialization*/
-
-    /* Set up the functions to access to your display */
-    if (LV_VDB_SIZE != 0) {
-        disp_drv.disp_flush = ex_disp_flush; /*Used in buffered mode (LV_VDB_SIZE != 0  in lv_conf.h)*/
-    } else if (LV_VDB_SIZE == 0) {
-        disp_drv.disp_fill = ex_disp_fill; /*Used in unbuffered mode (LV_VDB_SIZE == 0  in lv_conf.h)*/
-        disp_drv.disp_map = ex_disp_map;   /*Used in unbuffered mode (LV_VDB_SIZE == 0  in lv_conf.h)*/
-    }
-
-    /* Finally register the driver */
-    lv_disp_drv_register(&disp_drv);
+    /*init lvgl*/
+    lvgl_init();
 }
