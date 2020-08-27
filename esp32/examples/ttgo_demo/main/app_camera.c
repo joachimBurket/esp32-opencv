@@ -62,7 +62,7 @@ void app_camera_init()
     config.pixel_format = CAMERA_PIXEL_FORMAT;
     config.frame_size = CAMERA_FRAME_SIZE;
     config.jpeg_quality = 10;
-    config.fb_count = 2;
+    config.fb_count = 1;
 
     // camera init
     esp_err_t err = esp_camera_init(&config);
