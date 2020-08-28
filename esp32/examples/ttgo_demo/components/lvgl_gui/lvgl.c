@@ -54,7 +54,7 @@ void lvgl_init()
     esp_timer_handle_t g_wifi_connect_timer = NULL;
     esp_timer_create(&timer_conf, &g_wifi_connect_timer);
 
-    esp_timer_start_periodic(g_wifi_connect_timer, 1 * 1000U);
+    esp_timer_start_periodic(g_wifi_connect_timer, 1 * 1000U);      // lv_tick_inc() called each 1 ms
 
     /* Display interface */
     lvgl_lcd_hal_init();
@@ -67,7 +67,7 @@ void lvgl_init()
     esp_timer_handle_t lv_task_timer = NULL;
     esp_timer_create(&lv_task_timer_conf, &lv_task_timer);
 
-    esp_timer_start_periodic(lv_task_timer, 5 * 1000U);
+    esp_timer_start_periodic(lv_task_timer, 5 * 1000U);             // lv_task_handler() called each 5 ms
 
     vTaskDelay(LVGL_INIT_DELAY / portTICK_PERIOD_MS);    // wait for execute lv_task_handler and lv_tick_inc to avoid some widget don't refresh.
 

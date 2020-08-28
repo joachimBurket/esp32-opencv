@@ -406,7 +406,7 @@ exit:
 #include "lvgl.h"
 
 /* lvgl internal graphics buffers */
-#define DISP_BUF_SIZE LV_HOR_RES_MAX * 24       // Horizontal resolution X number of lines sent to the driver
+#define DISP_BUF_SIZE LV_HOR_RES_MAX * 24       // Horizontal resolution * number of lines sent to the driver
 static lv_disp_buf_t disp_buf;
 static lv_color_t buf_1[DISP_BUF_SIZE];
 static lv_color_t buf_2[DISP_BUF_SIZE];
@@ -421,34 +421,6 @@ static void ex_disp_flush(lv_disp_drv_t *disp_drv, const lv_area_t *area, lv_col
     lv_disp_flush_ready(&disp->driver);
 }
 
-/*Calls `lv_tick_inc()` at regular interval to inform lvgl of elapsed time*/
-static void IRAM_ATTR lv_tick_cb(void) {
-    lv_tick_inc(portTICK_RATE_MS);
-}
-
-void lvgl_init()
-{
-    /* register lvgl tick callback function */
-    esp_register_freertos_tick_hook(lv_tick_cb);
-
-    /*lvgl initialize*/
-    lv_init();
-
-    /* init display buffers */
-    lv_disp_buf_init(&disp_buf, buf_1, buf_2, DISP_BUF_SIZE);
-
-    /* screen driver */
-    lv_disp_drv_t disp_drv;         /*Descriptor of a display driver*/
-    lv_disp_drv_init(&disp_drv);    /*Basic initialization*/
-
-    disp_drv.flush_cb = ex_disp_flush;
-    disp_drv.buffer = &disp_buf;
-
-    /* Finally register the driver */
-    lv_disp_drv_register(&disp_drv);
-}
-
-// todo: separate lcv_hal_init() and lvgl_init()
 void lvgl_lcd_hal_init()
 {
 	lcd_conf_t lcd_pins = {
@@ -477,6 +449,16 @@ void lvgl_lcd_hal_init()
     tft->setRotation(0);
     tft->fillScreen(COLOR_BLACK);
 
-    /*init lvgl*/
-    lvgl_init();
+    /* init lvgl display buffers */
+    lv_disp_buf_init(&disp_buf, buf_1, buf_2, DISP_BUF_SIZE);
+
+    /* lvgl screen driver */
+    lv_disp_drv_t disp_drv;         /*Descriptor of a display driver*/
+    lv_disp_drv_init(&disp_drv);    /*Basic initialization*/
+
+    disp_drv.flush_cb = ex_disp_flush;
+    disp_drv.buffer = &disp_buf;
+
+    /* Finally register the driver */
+    lv_disp_drv_register(&disp_drv);
 }
