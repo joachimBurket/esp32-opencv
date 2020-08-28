@@ -12,6 +12,7 @@
 #include <freertos/task.h>
 #include <esp_freertos_hooks.h>
 #include <iostream>
+#include <map>
 
 #include "system.h"
 #include "app_screen.h"
@@ -33,23 +34,37 @@ extern CEspLcd *tft;
 static lv_obj_t *lvCameraImage; // Camera image object
 
 void gui_boot_screen() {
-    lv_obj_t *scr = lv_disp_get_scr_act(nullptr);
+    static lv_style_t style;
+    lv_style_init(&style);
 
-    lv_obj_t *label1 = lv_label_create(scr, nullptr);
-    lv_label_set_text(label1, "Hello World!");
-    lv_obj_align(label1, nullptr, LV_ALIGN_CENTER, 0, 0);
+    lv_style_set_radius(&style, LV_STATE_DEFAULT, 2);
+    lv_style_set_bg_opa(&style, LV_STATE_DEFAULT, LV_OPA_COVER);
+    lv_style_set_bg_color(&style, LV_STATE_DEFAULT, LV_COLOR_MAKE(190, 190, 190));
+    lv_style_set_border_width(&style, LV_STATE_DEFAULT, 2);
+    lv_style_set_border_color(&style, LV_STATE_DEFAULT, LV_COLOR_MAKE(142, 142, 142));
 
+    lv_style_set_pad_top(&style, LV_STATE_DEFAULT, 60);
+    lv_style_set_pad_bottom(&style, LV_STATE_DEFAULT, 60);
+    lv_style_set_pad_left(&style, LV_STATE_DEFAULT, 60);
+    lv_style_set_pad_right(&style, LV_STATE_DEFAULT, 60);
+
+    lv_style_set_text_color(&style, LV_STATE_DEFAULT, LV_COLOR_MAKE(102, 102, 102));
+    lv_style_set_text_letter_space(&style, LV_STATE_DEFAULT, 5);
+    lv_style_set_text_line_space(&style, LV_STATE_DEFAULT, 20);
+
+    /*Create an object with the new style*/
+    lv_obj_t * obj = lv_label_create(lv_scr_act(), NULL);
+    lv_obj_add_style(obj, LV_LABEL_PART_MAIN, &style);
+    lv_label_set_text(obj, "TTGO\n"
+                           "demo!");
+    lv_obj_align(obj, NULL, LV_ALIGN_CENTER, 0, 0);
+    wait_msec(3000);
 }
 
 void gui_init() {
     // Create screen
     lv_obj_t *scr = lv_obj_create(nullptr, nullptr);
     lv_scr_load(scr);
-
-    // Init camera image Lvgl object
-    lvCameraImage = lv_img_create(lv_disp_get_scr_act(nullptr), nullptr);
-    lv_obj_set_hidden(lvCameraImage, true);
-    lv_obj_move_foreground(lvCameraImage);
 }
 
 esp_err_t updateCameraImage(const cv::Mat &img) {
@@ -80,16 +95,26 @@ esp_err_t updateCameraImage(const cv::Mat &img) {
     my_img_dsc.data_size = imgCopy.size().width * imgCopy.size().height;
     my_img_dsc.data = imgCopy.ptr<uchar>(0);
 
-    if(lv_obj_get_hidden(lvCameraImage))
-        lv_obj_set_hidden(lvCameraImage, false);
-    lv_obj_move_foreground(lvCameraImage);
-
     lv_img_set_src(lvCameraImage, &my_img_dsc);  /* Set the created file as image */
     lv_obj_set_pos(lvCameraImage, -40, 0);
 
     return ESP_OK;
 }
-//#endif
+
+// mode of the demo
+enum class DisplayMode : uint8_t {RGB, GRAYSCALE, BINARIZED, EDGES, NUM_OF_MODES};
+static DisplayMode currentDisplayMode;
+
+static const std::string displayModeToString(DisplayMode dispMode) {
+    const std::map<DisplayMode, const std::string> DisplayModeStrings {
+            {DisplayMode::RGB, "RGB"},
+            {DisplayMode::GRAYSCALE, "GRAYSCALE"},
+            {DisplayMode::BINARIZED, "BINARIZED"},
+            {DisplayMode::EDGES, "EDGES"},
+    };
+    auto it = DisplayModeStrings.find(dispMode);
+    return (it == DisplayModeStrings.end()) ? "Out of range" : it->second;
+}
 
 /**
  * Task doing the demo: Getting image from camera, processing it with opencv depending on the displayMode and
@@ -103,6 +128,10 @@ void demo_task(void *arg) {
 
     tft->setRotation(2);        // rotation needed if camera is on the back of the device
     sensor_t *s = esp_camera_sensor_get();
+
+    // Init camera image Lvgl object
+    lvCameraImage = lv_img_create(lv_disp_get_scr_act(nullptr), nullptr);
+    lv_obj_move_foreground(lvCameraImage);
 
     while(true) {
         auto start = esp_timer_get_time();
@@ -119,10 +148,6 @@ void demo_task(void *arg) {
             }
             else {  // RGB565 pixformat
                 Mat inputImage(fb->height, fb->width, CV_8UC2, fb->buf);      // rgb565 is 2 channels of 8-bit unsigned
-                updateCameraImage(inputImage);
-
-#if 0   // TODO: next step..
-                Mat outputImage;
 
                 if(currentDisplayMode == DisplayMode::RGB) {
                 }
@@ -150,16 +175,22 @@ void demo_task(void *arg) {
                     ESP_LOGE(TAG, "Wrong display mode: %d", (int)currentDisplayMode);
                 }
 
-                // Diplay image on LCD
-                setImage(inputImage);
-#endif
+                // display image on lcd
+                updateCameraImage(inputImage);
             }
         }
 
-        ESP_LOGI(TAG, "time taken: %lld ms", (esp_timer_get_time() - start) / 1000);
+        ESP_LOGI(TAG, "%s mode: around %f fps", displayModeToString(currentDisplayMode).c_str(), 1.0f/((esp_timer_get_time() - start) / 1000000.0f));
+    }
+}
 
-        wait_msec(25);
-        lv_task_handler();  // tells LVGL to handle its tasks
+/**
+ * Task changing the current displayMode at regular interval
+ */
+void timer_task(void *arg) {
+    while(true) {
+        wait_msec(3000);
+        currentDisplayMode = static_cast<DisplayMode>((static_cast<int>(currentDisplayMode) + 1) % static_cast<int>(DisplayMode::NUM_OF_MODES));
     }
 }
 
@@ -174,7 +205,6 @@ void app_main()
 
     /* display boot screen */
     gui_boot_screen();
-    wait_msec(1500);
 
     /* Display memory infos */
     disp_infos();
@@ -183,4 +213,5 @@ void app_main()
 
     /* Start the tasks */
     xTaskCreatePinnedToCore(demo_task, "demo", 1024 * 9, nullptr, 24, nullptr, 0);
+    xTaskCreatePinnedToCore(timer_task, "timer", 1024 * 1, nullptr, 24, nullptr, 0);
 }
