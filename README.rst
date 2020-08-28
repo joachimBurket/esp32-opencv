@@ -6,30 +6,44 @@ OpenCV for Esp32
 This is a clone of OpenCV (from commit 8808aaccffaec43d5d276af493ff408d81d4593c), modified to be cross-compiled on the ESP32. This Readme explains how to cross-compile on the ESP32 and also some details on the steps done. 
 
 
+Demo
+====
 
-Hardware
-========
-
-The tests were done on the ESP32D0WDQ6 (revision 1):
+A demo has been made using the **TTGO Camera Plus** module (https://github.com/Xinyuan-LilyGO/esp32-camera-screen). The board embedds an ESP32-DOWDQ6 with: 
 
 - Xtensa dual core 32-bit LX6 uP, up to 600 MIPS
 - 448 KB of ROM for booting and core functions
 - 520 KB of SRAM for data and instructions cache
 - 16 KB SRAM in RTC
 - 8 MB of external SPI RAM
-- 16 MB of external SPI Flash
+- 4 MB of external SPI Flash
 
 
-Demo
-====
-
-A demo has been made using the **TTGO Camera Plus** module (https://github.com/Xinyuan-LilyGO/esp32-camera-screen). It gets an image from the camera, applies a simple transformation on it (Grayscale, Threshold or Canny edge detection), and then displays it on the LCD.
+The demo consists in getting an image from the camera, applying a simple transformation on it (Grayscale, Threshold or Canny edge detection), and then displaying it on the LCD.
 
 .. image:: esp32/examples/ttgo_demo/demo/ttgo_demo.gif
+
+The size taken by the application is the following: 
+
+.. code:: shell
+
+
+  Total sizes:
+  DRAM .data size:   33536 bytes
+  DRAM .bss  size:   74424 bytes
+  Used static DRAM:  107960 bytes (  72776 available, 59.7% used)
+  Used static IRAM:   79695 bytes (  51377 available, 60.8% used)
+  Flash code: 1 096 883 bytes
+  Flash rodata:  356 144 bytes
+  Total image size:~1 640 682 bytes (.bin may be padded larger)
+
+
 
 The demo code is located in `esp32/examples/ttgo_demo/`_.
 
 .. _`esp32/examples/ttgo_demo/`: esp32/examples/ttgo_demo/
+
+
 
 
 Benchmark
