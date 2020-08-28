@@ -20,6 +20,17 @@ The tests were done on the ESP32D0WDQ6 (revision 1):
 - 16 MB of external SPI Flash
 
 
+Demo
+====
+
+A demo has been made using the **TTGO Camera Plus** module (https://github.com/Xinyuan-LilyGO/esp32-camera-screen). It gets an image from the camera, applies a simple transformation on it (Grayscale, Threshold or Canny edge detection), and then displays it on the LCD.
+
+.. image:: esp32/examples/ttgo_demo/demo/ttgo_demo.gif
+
+The demo code is located in `esp32/examples/ttgo_demo/`_.
+
+.. _`esp32/examples/ttgo_demo/`: esp32/examples/ttgo_demo/
+
 
 Benchmark
 =========
