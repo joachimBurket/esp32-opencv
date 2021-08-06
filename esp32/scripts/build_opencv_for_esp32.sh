@@ -27,7 +27,7 @@ if [ -z "$1" ]
   then
     echo "Using default toolchain cmake file path: ${TOOLCHAIN_CMAKE_PATH}" 
 else 
-     TOOLCHAIN_PATH=$1
+     TOOLCHAIN_CMAKE_PATH=$1
      echo "Using toolchain cmake file path: ${TOOLCHAIN_CMAKE_PATH}"
 fi
 
