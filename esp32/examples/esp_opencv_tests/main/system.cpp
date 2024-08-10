@@ -54,5 +54,5 @@ void wait_sec(uint16_t v) {
 
 void disp_mem_infos() {
     ESP_LOGI(TAG, "task stack watermark: %d Bytes", uxTaskGetStackHighWaterMark(NULL));
-    ESP_LOGI(TAG, "heap left: %d Bytes", esp_get_free_heap_size());
+    ESP_LOGI(TAG, "heap left: %lu Bytes", esp_get_free_heap_size());
 }

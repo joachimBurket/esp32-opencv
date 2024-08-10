@@ -254,7 +254,7 @@ static UINT tjd_output(
 
         dev->linbuf_idx = ((dev->linbuf_idx + 1) & 1);
     } else {
-        ESP_LOGE(TAG, "Data size error: %d jpg: (%d,%d,%d,%d) disp: (%d,%d,%d,%d)\r\n", len, left, top, right, bottom, dleft, dtop, dright, dbottom);
+        ESP_LOGE(TAG, "Data size error: %lu jpg: (%i,%i,%i,%i) disp: (%i,%i,%i,%i)\r\n", len, left, top, right, bottom, dleft, dtop, dright, dbottom);
         return 0; // stop decompression
     }
     return 1; // Continue to decompression

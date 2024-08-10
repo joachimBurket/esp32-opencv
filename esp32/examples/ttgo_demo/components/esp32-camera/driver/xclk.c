@@ -4,7 +4,7 @@
 #include "esp_log.h"
 #include "esp_system.h"
 #include "xclk.h"
-
+#include "esp_private/periph_ctrl.h"
 #if defined(ARDUINO_ARCH_ESP32) && defined(CONFIG_ARDUHAL_ESP_LOG)
 #include "esp32-hal-log.h"
 #else

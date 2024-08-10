@@ -1,6 +1,6 @@
-#include "opencv2/core.hpp"
-#include "opencv2/imgproc.hpp"
-#include "opencv2/imgcodecs.hpp"
+#include "opencv/opencv2/core.hpp"
+#include "opencv/opencv2/imgproc.hpp"
+#include "opencv/opencv2/imgcodecs.hpp"
 
 #include <esp_log.h>
 #include <esp_err.h>
